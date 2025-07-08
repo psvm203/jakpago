@@ -1,0 +1,14 @@
+- value: default
+  name: 자동
+- value: light
+  name: 라이트
+- value: dark
+  name: 다크
+- value: caramellatte
+  name: 카라멜라떼
+- value: valentine
+  name: 발렌타인
+- value: aqua
+  name: 아쿠아
+- value: synthwave
+  name: 신스웨이브
