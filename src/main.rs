@@ -50,7 +50,7 @@ fn App() -> Html {
         let theme_items: Html = themes.into_iter().map(|theme| theme_item(&theme)).collect();
 
         html! {
-            <div class={"dropdown mb-72"}>
+            <div class={"dropdown mb-72 absolute right-48"}>
                 <div tabindex={"0"} role={"button"} class={"btn m-1"}>
                     { "테마" }
                     <svg
