@@ -3,8 +3,7 @@
   placeholder: 1 ~ 23
   min: 1
   max: 23
-- id: item_level
-  label: 아이템 레벨
-  placeholder: 0 ~ 250
-  min: 0
-  max: 250
+- id: traces_required
+  label: 주문의 흔적 요구량
+  placeholder: "1"
+  min: 1
