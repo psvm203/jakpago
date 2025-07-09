@@ -88,13 +88,32 @@ fn App() -> Html {
         impl Field {
             fn onchange(&self) -> Callback<Event> {
                 let state = self.state.clone();
+                let min = self.min;
+                let max = self.max;
 
                 Callback::from(move |event: Event| {
                     let target = event.target();
                     let input = target.and_then(|t| t.dyn_into::<HtmlInputElement>().ok());
 
                     if let Some(input) = input {
-                        state.set(input.value().parse().unwrap());
+                        match input.value().parse::<usize>() {
+                            Ok(value) => {
+                                if let Some(min) = min {
+                                    if value < min {
+                                        return;
+                                    }
+                                }
+
+                                if let Some(max) = max {
+                                    if value > max {
+                                        return;
+                                    }
+                                }
+
+                                state.set(value);
+                            }
+                            Err(_) => return,
+                        }
                     }
                 })
             }
