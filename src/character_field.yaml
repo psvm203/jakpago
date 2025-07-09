@@ -1,0 +1,18 @@
+- id: diligence
+  label: 손재주
+  placeholder: 0 ~ 100
+  min: 0
+  max: 100
+  description: 성공 확률 n%p 증가
+- id: enhancement_mastery
+  label: 강화의 달인
+  placeholder: 0 ~ 4
+  min: 0
+  max: 4
+  description: 성공 확률 n%p 증가
+- id: upgrade_salvation
+  label: 실패를 두려워 않는
+  placeholder: 0 ~ 4
+  min: 0
+  max: 4
+  description: 실패 시 n% 확률로 횟수 차감 방지
