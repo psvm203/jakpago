@@ -847,6 +847,7 @@ dependencies = [
  "gloo-storage 0.3.0",
  "serde",
  "serde_yaml",
+ "web-sys",
  "yew",
 ]
 

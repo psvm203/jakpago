@@ -1,5 +1,6 @@
 use gloo_storage::{LocalStorage, Storage};
 use serde::Deserialize;
+use web_sys::{HtmlInputElement, wasm_bindgen::JsCast};
 use yew::prelude::*;
 
 #[function_component]
@@ -74,27 +75,51 @@ fn App() -> Html {
     };
 
     let fieldsets = {
-        #[derive(Deserialize)]
         struct Field {
             id: &'static str,
             label: &'static str,
             placeholder: &'static str,
             min: Option<usize>,
             max: Option<usize>,
-            description: Option<&'static str>,
+            description: Option<fn(usize) -> String>,
+            state: UseStateHandle<usize>,
         }
 
-        impl Default for Field {
-            fn default() -> Field {
-                Field {
-                    id: "",
-                    label: "",
-                    placeholder: "",
-                    min: None,
-                    max: None,
-                    description: None,
-                }
+        impl Field {
+            fn onchange(&self) -> Callback<Event> {
+                let state = self.state.clone();
+
+                Callback::from(move |event: Event| {
+                    let target = event.target();
+                    let input = target.and_then(|t| t.dyn_into::<HtmlInputElement>().ok());
+
+                    if let Some(input) = input {
+                        state.set(input.value().parse().unwrap());
+                    }
+                })
             }
+        }
+
+        let diligence_state = use_state(|| 0_usize);
+        let enhancement_mastery_state = use_state(|| 0_usize);
+        let upgrade_salvation_state = use_state(|| 0_usize);
+        let enhancement_slots_state = use_state(|| 0_usize);
+        let traces_required_state = use_state(|| 0_usize);
+        let traces_price_state = use_state(|| 0_usize);
+        let innocence_price_state = use_state(|| 0_usize);
+        let ark_innocence_price_state = use_state(|| 0_usize);
+        let white_price_state = use_state(|| 0_usize);
+
+        fn descript_diligence(diligence: usize) -> String {
+            format!("성공 확률 {}%p 증가", (diligence / 5 * 5) as f64 / 10.0)
+        }
+
+        fn descript_enhancement_mastery(enhancement_mastery: usize) -> String {
+            format!("성공 확률 {}%p 증가", enhancement_mastery)
+        }
+
+        fn descript_upgrade_salvation(upgrade_salvation: usize) -> String {
+            format!("실패 시 {}% 확률로 횟수 차감 방지", upgrade_salvation)
         }
 
         let diligence = Field {
@@ -103,7 +128,8 @@ fn App() -> Html {
             placeholder: "0 ~ 100",
             min: Some(0),
             max: Some(100),
-            description: Some("성공 확률 n%p 증가"),
+            description: Some(descript_diligence),
+            state: diligence_state,
         };
 
         let enhancement_mastery = Field {
@@ -112,7 +138,8 @@ fn App() -> Html {
             placeholder: "0 ~ 4",
             min: Some(0),
             max: Some(4),
-            description: Some("성공 확률 n%p 증가"),
+            description: Some(descript_enhancement_mastery),
+            state: enhancement_mastery_state,
         };
 
         let upgrade_salvation = Field {
@@ -121,7 +148,8 @@ fn App() -> Html {
             placeholder: "0 ~ 4",
             min: Some(0),
             max: Some(4),
-            description: Some("실패 시 n% 확률로 횟수 차감 방지"),
+            description: Some(descript_upgrade_salvation),
+            state: upgrade_salvation_state,
         };
 
         let enhancement_slots = Field {
@@ -130,15 +158,18 @@ fn App() -> Html {
             placeholder: "1 ~ 23",
             min: Some(1),
             max: Some(23),
-            ..Default::default()
+            description: None,
+            state: enhancement_slots_state,
         };
 
         let traces_required = Field {
             id: "traces_required",
             label: "주문의 흔적 요구량",
-            placeholder: "1",
-            min: Some(1),
-            ..Default::default()
+            placeholder: "0",
+            min: Some(0),
+            max: None,
+            description: None,
+            state: traces_required_state,
         };
 
         let traces_price = Field {
@@ -146,7 +177,9 @@ fn App() -> Html {
             label: "주문의 흔적 시세",
             placeholder: "0",
             min: Some(0),
-            ..Default::default()
+            max: None,
+            description: None,
+            state: traces_price_state,
         };
 
         let innocence_price = Field {
@@ -154,7 +187,9 @@ fn App() -> Html {
             label: "이노센트 주문서 시세",
             placeholder: "0",
             min: Some(0),
-            ..Default::default()
+            max: None,
+            description: None,
+            state: innocence_price_state,
         };
 
         let ark_innocence_price = Field {
@@ -162,7 +197,9 @@ fn App() -> Html {
             label: "아크 이노센트 주문서 시세",
             placeholder: "0",
             min: Some(0),
-            ..Default::default()
+            max: None,
+            description: None,
+            state: ark_innocence_price_state,
         };
 
         let white_price = Field {
@@ -170,7 +207,9 @@ fn App() -> Html {
             label: "순백의 주문서 시세",
             placeholder: "0",
             min: Some(0),
-            ..Default::default()
+            max: None,
+            description: None,
+            state: white_price_state,
         };
 
         let field_item = |field: &Field| -> Html {
@@ -187,9 +226,10 @@ fn App() -> Html {
                         placeholder={field.placeholder}
                         min={field.min.map(|min| min.to_string())}
                         max={field.max.map(|max| max.to_string())}
+                        onchange={field.onchange()}
                     />
                     <div>
-                        { field.description }
+                        { field.description.map(|descript| descript(*field.state)) }
                     </div>
                 </div>
             }

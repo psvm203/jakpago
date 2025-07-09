@@ -7,4 +7,5 @@ edition = "2024"
 gloo-storage = "0.3.0"
 serde = { version = "1.0.219", features = ["derive"] }
 serde_yaml = "0.9.34"
+web-sys = "0.3.77"
 yew = { version = "0.21.0", features = ["csr"] }
