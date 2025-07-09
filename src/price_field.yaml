@@ -1,0 +1,12 @@
+- id: traces_price
+  label: 주문의 흔적 시세
+  placeholder: "0"
+- id: innocence_price
+  label: 이노센트 주문서 시세
+  placeholder: "0"
+- id: ark_innocence_price
+  label: 아크 이노센트 주문서 시세
+  placeholder: "0"
+- id: white_price
+  label: 순백의 주문서 시세
+  placeholder: "0"

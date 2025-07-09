@@ -79,8 +79,8 @@ fn App() -> Html {
             id: &'static str,
             label: &'static str,
             placeholder: &'static str,
-            min: usize,
-            max: usize,
+            min: Option<usize>,
+            max: Option<usize>,
             description: Option<&'static str>,
         }
 
@@ -96,8 +96,8 @@ fn App() -> Html {
                         class={"input validator"}
                         required={true}
                         placeholder={field.placeholder}
-                        min={field.min.to_string()}
-                        max={field.max.to_string()}
+                        min={field.min.map(|min| min.to_string())}
+                        max={field.max.map(|max| max.to_string())}
                     />
                     <div>
                         { field.description.unwrap_or_else(|| "") }
@@ -180,10 +180,25 @@ fn App() -> Html {
             fieldset_item("아이템 정보", contents)
         };
 
+        let price_fieldset = {
+            let field_data = include_str!("price_field.yaml");
+            let fields: Vec<Field> = serde_yaml::from_str(field_data).unwrap();
+            let field_items: Html = fields.into_iter().map(|field| field_item(&field)).collect();
+
+            let contents = html! {
+                <div>
+                    { field_items }
+                </div>
+            };
+
+            fieldset_item("시세 정보", contents)
+        };
+
         html! {
             <div class={"grid grid-cols-6 gap-48 p-16"}>
                 { character_fieldset }
                 { item_fieldset }
+                { price_fieldset }
             </div>
         }
     };
