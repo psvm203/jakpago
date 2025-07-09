@@ -100,7 +100,7 @@ fn App() -> Html {
                         max={field.max.map(|max| max.to_string())}
                     />
                     <div>
-                        { field.description.unwrap_or_else(|| "") }
+                        { field.description }
                     </div>
                 </div>
             }
