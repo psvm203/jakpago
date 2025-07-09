@@ -1,9 +1,0 @@
-- id: enhancement_slots
-  label: 주문서 강화 가능 횟수
-  placeholder: 1 ~ 23
-  min: 1
-  max: 23
-- id: traces_required
-  label: 주문의 흔적 요구량
-  placeholder: "1"
-  min: 1

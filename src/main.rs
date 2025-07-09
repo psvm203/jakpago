@@ -84,6 +84,95 @@ fn App() -> Html {
             description: Option<&'static str>,
         }
 
+        impl Default for Field {
+            fn default() -> Field {
+                Field {
+                    id: "",
+                    label: "",
+                    placeholder: "",
+                    min: None,
+                    max: None,
+                    description: None,
+                }
+            }
+        }
+
+        let diligence = Field {
+            id: "diligence",
+            label: "손재주",
+            placeholder: "0 ~ 100",
+            min: Some(0),
+            max: Some(100),
+            description: Some("성공 확률 n%p 증가"),
+        };
+
+        let enhancement_mastery = Field {
+            id: "enhancement_mastery",
+            label: "강화의 달인",
+            placeholder: "0 ~ 4",
+            min: Some(0),
+            max: Some(4),
+            description: Some("성공 확률 n%p 증가"),
+        };
+
+        let upgrade_salvation = Field {
+            id: "upgrade_salvation",
+            label: "실패를 두려워 않는",
+            placeholder: "0 ~ 4",
+            min: Some(0),
+            max: Some(4),
+            description: Some("실패 시 n% 확률로 횟수 차감 방지"),
+        };
+
+        let enhancement_slots = Field {
+            id: "enhancement_slots",
+            label: "주문서 강화 가능 횟수",
+            placeholder: "1 ~ 23",
+            min: Some(1),
+            max: Some(23),
+            ..Default::default()
+        };
+
+        let traces_required = Field {
+            id: "traces_required",
+            label: "주문의 흔적 요구량",
+            placeholder: "1",
+            min: Some(1),
+            ..Default::default()
+        };
+
+        let traces_price = Field {
+            id: "traces_price",
+            label: "주문의 흔적 시세",
+            placeholder: "0",
+            min: Some(0),
+            ..Default::default()
+        };
+
+        let innocence_price = Field {
+            id: "innocence_price",
+            label: "이노센트 주문서 시세",
+            placeholder: "0",
+            min: Some(0),
+            ..Default::default()
+        };
+
+        let ark_innocence_price = Field {
+            id: "ark_innocence_price",
+            label: "아크 이노센트 주문서 시세",
+            placeholder: "0",
+            min: Some(0),
+            ..Default::default()
+        };
+
+        let white_price = Field {
+            id: "white_price",
+            label: "순백의 주문서 시세",
+            placeholder: "0",
+            min: Some(0),
+            ..Default::default()
+        };
+
         let field_item = |field: &Field| -> Html {
             html! {
                 <div>
@@ -145,8 +234,7 @@ fn App() -> Html {
         };
 
         let character_fieldset = {
-            let field_data = include_str!("character_field.yaml");
-            let fields: Vec<Field> = serde_yaml::from_str(field_data).unwrap();
+            let fields = vec![diligence, enhancement_mastery, upgrade_salvation];
             let field_items: Html = fields.into_iter().map(|field| field_item(&field)).collect();
 
             let keyboard = html! {
@@ -166,8 +254,7 @@ fn App() -> Html {
         };
 
         let item_fieldset = {
-            let field_data = include_str!("item_field.yaml");
-            let fields: Vec<Field> = serde_yaml::from_str(field_data).unwrap();
+            let fields = vec![enhancement_slots, traces_required];
             let field_items: Html = fields.into_iter().map(|field| field_item(&field)).collect();
 
             let contents = html! {
@@ -181,8 +268,7 @@ fn App() -> Html {
         };
 
         let price_fieldset = {
-            let field_data = include_str!("price_field.yaml");
-            let fields: Vec<Field> = serde_yaml::from_str(field_data).unwrap();
+            let fields = vec![traces_price, innocence_price, ark_innocence_price, white_price];
             let field_items: Html = fields.into_iter().map(|field| field_item(&field)).collect();
 
             let contents = html! {
