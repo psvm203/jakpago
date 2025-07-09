@@ -74,80 +74,116 @@ fn App() -> Html {
     };
 
     let fieldsets = {
-        let character_fieldset = {
-            #[derive(Deserialize)]
-            struct Field {
-                id: &'static str,
-                label: &'static str,
-                placeholder: &'static str,
-                min: usize,
-                max: usize,
-                description: &'static str,
-            }
+        #[derive(Deserialize)]
+        struct Field {
+            id: &'static str,
+            label: &'static str,
+            placeholder: &'static str,
+            min: usize,
+            max: usize,
+            description: Option<&'static str>,
+        }
 
-            let field_item = |field: &Field| -> Html {
-                html! {
+        let field_item = |field: &Field| -> Html {
+            html! {
+                <div>
+                    <label class={"label"} for={field.id}>
+                        { field.label }
+                    </label>
+                    <input
+                        type={"number"}
+                        id={field.id}
+                        class={"input validator"}
+                        required={true}
+                        placeholder={field.placeholder}
+                        min={field.min.to_string()}
+                        max={field.max.to_string()}
+                    />
                     <div>
-                        <label class={"label"} for={field.id}>
-                            { field.label }
-                        </label>
-                        <input
-                            type={"number"}
-                            id={field.id}
-                            class={"input validator"}
-                            required={true}
-                            placeholder={field.placeholder}
-                            min={field.min.to_string()}
-                            max={field.max.to_string()}
-                        />
-                        <div>
-                            { field.description }
-                        </div>
+                        { field.description.unwrap_or_else(|| "") }
                     </div>
-                }
-            };
+                </div>
+            }
+        };
 
-            let field_data = include_str!("character_field.yaml");
-            let fields: Vec<Field> = serde_yaml::from_str(field_data).unwrap();
-            let field_items: Html = fields.into_iter().map(|field| field_item(&field)).collect();
-
+        let fieldset_item = |legend: &str, contents: Html| -> Html {
             html! {
                 <fieldset
                     class={"fieldset bg-base-200 border-base-300 rounded-box w-xs border p-4"}
                 >
                     <legend class={"fieldset-legend"}>
-                        { "캐릭터 정보" }
+                        { legend }
                     </legend>
-                    <label class={"input"}>
-                        <svg
-                            class={"h-[1em] opacity-50"}
-                            xmlns={"http://www.w3.org/2000/svg"}
-                            viewBox={"0 0 24 24"}
-                        >
-                            <g
-                                stroke-linejoin={"round"}
-                                stroke-linecap={"round"}
-                                stroke-width={"2.5"}
-                                fill={"none"}
-                                stroke={"currentColor"}
-                            >
-                                <circle cx={"11"} cy={"11"} r={"8"} />
-                                <path d={"m21 21-4.3-4.3"} />
-                            </g>
-                        </svg>
-                        <input type={"search"} class={"grow"} placeholder={"캐릭터 검색"} />
-                        <kbd class={"kbd kbd-sm"}>
-                            { "↵" }
-                        </kbd>
-                    </label>
-                    { field_items }
+                    { contents }
                 </fieldset>
             }
+        };
+
+        let search_input = |placeholder: &str, contents: Html| -> Html {
+            html! {
+                <label class={"input"}>
+                    <svg
+                        class={"h-[1em] opacity-50"}
+                        xmlns={"http://www.w3.org/2000/svg"}
+                        viewBox={"0 0 24 24"}
+                    >
+                        <g
+                            stroke-linejoin={"round"}
+                            stroke-linecap={"round"}
+                            stroke-width={"2.5"}
+                            fill={"none"}
+                            stroke={"currentColor"}
+                        >
+                            <circle cx={"11"} cy={"11"} r={"8"} />
+                            <path d={"m21 21-4.3-4.3"} />
+                        </g>
+                    </svg>
+                    <input type={"search"} class={"grow"} placeholder={placeholder.to_owned()} />
+                    { contents }
+                </label>
+            }
+        };
+
+        let character_fieldset = {
+            let field_data = include_str!("character_field.yaml");
+            let fields: Vec<Field> = serde_yaml::from_str(field_data).unwrap();
+            let field_items: Html = fields.into_iter().map(|field| field_item(&field)).collect();
+
+            let keyboard = html! {
+                <kbd class={"kbd kbd-sm"}>
+                    { "↵" }
+                </kbd>
+            };
+
+            let contents = html! {
+                <div>
+                    { search_input("캐릭터 검색", keyboard) }
+                    { field_items }
+                </div>
+            };
+
+            fieldset_item("캐릭터 정보", contents)
+        };
+
+        let item_fieldset = {
+            let field_data = include_str!("item_field.yaml");
+            let fields: Vec<Field> = serde_yaml::from_str(field_data).unwrap();
+            let field_items: Html = fields.into_iter().map(|field| field_item(&field)).collect();
+
+            let contents = html! {
+                <div>
+                    { search_input("아이템 검색", html!{}) }
+                    { field_items }
+                </div>
+            };
+
+            fieldset_item("아이템 정보", contents)
         };
 
         html! {
             <div class={"grid grid-cols-6 gap-48 p-16"}>
                 { character_fieldset }
+                { item_fieldset }
             </div>
         }
     };

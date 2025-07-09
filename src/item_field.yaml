@@ -1,0 +1,10 @@
+- id: enhancement_slots
+  label: 주문서 강화 가능 횟수
+  placeholder: 1 ~ 23
+  min: 1
+  max: 23
+- id: item_level
+  label: 아이템 레벨
+  placeholder: 0 ~ 250
+  min: 0
+  max: 250
