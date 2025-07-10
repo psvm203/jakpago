@@ -84,8 +84,8 @@ fn App() -> Html {
             EnhancementMastery,
             UpgradeSalvation,
             EnhancementSlots,
-            TracesRequired,
-            TracesPrice,
+            TraceRequired,
+            TracePrice,
             InnocencePrice,
             ArkInnocencePrice,
             WhitePrice,
@@ -142,8 +142,8 @@ fn App() -> Html {
             (FieldId::EnhancementMastery, use_state(|| 0_usize)),
             (FieldId::UpgradeSalvation, use_state(|| 0_usize)),
             (FieldId::EnhancementSlots, use_state(|| 0_usize)),
-            (FieldId::TracesRequired, use_state(|| 0_usize)),
-            (FieldId::TracesPrice, use_state(|| 0_usize)),
+            (FieldId::TraceRequired, use_state(|| 0_usize)),
+            (FieldId::TracePrice, use_state(|| 0_usize)),
             (FieldId::InnocencePrice, use_state(|| 0_usize)),
             (FieldId::ArkInnocencePrice, use_state(|| 0_usize)),
             (FieldId::WhitePrice, use_state(|| 0_usize)),
@@ -268,7 +268,7 @@ fn App() -> Html {
 
             let button_items: Html = buttons.into_iter().map(button_item).collect();
 
-            let fields = vec![FieldId::EnhancementSlots, FieldId::TracesRequired];
+            let fields = vec![FieldId::EnhancementSlots, FieldId::TraceRequired];
 
             let fields: Vec<&Field> =
                 fields.iter().map(|field| *field_map.get(field).unwrap()).collect();
@@ -288,7 +288,7 @@ fn App() -> Html {
 
         let price_fieldset = {
             let fields = vec![
-                FieldId::TracesPrice,
+                FieldId::TracePrice,
                 FieldId::InnocencePrice,
                 FieldId::ArkInnocencePrice,
                 FieldId::WhitePrice,
