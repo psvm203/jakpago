@@ -169,6 +169,14 @@ fn App() -> Html {
         ]);
 
         let field_item = |field: &Field| -> Html {
+            let min = field.min.map(|min| min.to_string());
+            let max = field.max.map(|max| max.to_string());
+            let onchange = field.onchange(states.clone());
+
+            let description = descriptions
+                .get(field.id)
+                .map(|descript| descript(*states.get(field.id).unwrap().clone()));
+
             html! {
                 <div>
                     <label class={"label"} for={field.id}>
@@ -180,12 +188,12 @@ fn App() -> Html {
                         class={"input validator"}
                         required={true}
                         placeholder={field.placeholder}
-                        min={field.min.map(|min| min.to_string())}
-                        max={field.max.map(|max| max.to_string())}
-                        onchange={field.onchange(states.clone())}
+                        {min}
+                        {max}
+                        {onchange}
                     />
                     <div>
-                        { descriptions.get(field.id).map(|descript| descript(*states.get(field.id).unwrap().clone())) }
+                        { description }
                     </div>
                 </div>
             }
