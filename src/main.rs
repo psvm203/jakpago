@@ -256,6 +256,18 @@ fn App() -> Html {
         };
 
         let item_fieldset = {
+            let buttons = vec!["100%", "70%", "30%", "15%"];
+
+            let button_item = |label: &str| -> Html {
+                html! {
+                    <button class={"btn btn-info"}>
+                        { label }
+                    </button>
+                }
+            };
+
+            let button_items: Html = buttons.into_iter().map(button_item).collect();
+
             let fields = vec![FieldId::EnhancementSlots, FieldId::TracesRequired];
 
             let fields: Vec<&Field> =
@@ -266,6 +278,7 @@ fn App() -> Html {
             let contents = html! {
                 <div>
                     { search_input("아이템 검색", html!{}) }
+                    { button_items }
                     { field_items }
                 </div>
             };
