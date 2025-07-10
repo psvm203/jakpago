@@ -1,6 +1,8 @@
 use gloo_storage::{LocalStorage, Storage};
 use serde::Deserialize;
 use std::collections::HashMap;
+use std::str::FromStr;
+use strum_macros::{Display, EnumString};
 use web_sys::{HtmlInputElement, wasm_bindgen::JsCast};
 use yew::prelude::*;
 
@@ -76,15 +78,18 @@ fn App() -> Html {
     };
 
     let fieldsets = {
-        const DILIGENCE: &str = "diligence";
-        const ENHANCEMENT_MASTERY: &str = "enhancement_mastery";
-        const UPGRADE_SALVATION: &str = "upgrade_salvation";
-        const ENHANCEMENT_SLOTS: &str = "enhancement_slots";
-        const TRACES_REQUIRED: &str = "traces_required";
-        const TRACES_PRICE: &str = "traces_price";
-        const INNOCENCE_PRICE: &str = "innocence_price";
-        const ARK_INNOCENCE_PRICE: &str = "ark_innocence_price";
-        const WHITE_PRICE: &str = "white_price";
+        #[derive(Clone, Display, EnumString, Eq, Hash, PartialEq)]
+        enum FieldId {
+            Diligence,
+            EnhancementMastery,
+            UpgradeSalvation,
+            EnhancementSlots,
+            TracesRequired,
+            TracesPrice,
+            InnocencePrice,
+            ArkInnocencePrice,
+            WhitePrice,
+        }
 
         #[derive(Deserialize)]
         struct Field {
@@ -96,11 +101,8 @@ fn App() -> Html {
         }
 
         impl Field {
-            fn onchange(
-                &self,
-                states: HashMap<&'static str, UseStateHandle<usize>>,
-            ) -> Callback<Event> {
-                let state = states.get(self.id).unwrap().clone();
+            fn onchange(&self, states: HashMap<FieldId, UseStateHandle<usize>>) -> Callback<Event> {
+                let state = states.get(&FieldId::from_str(self.id).unwrap()).unwrap().clone();
                 let min = self.min;
                 let max = self.max;
 
@@ -136,46 +138,32 @@ fn App() -> Html {
         let fields: Vec<Field> = serde_yaml::from_str(field_data).unwrap();
 
         let states = HashMap::from([
-            (DILIGENCE, use_state(|| 0_usize)),
-            (ENHANCEMENT_MASTERY, use_state(|| 0_usize)),
-            (UPGRADE_SALVATION, use_state(|| 0_usize)),
-            (ENHANCEMENT_SLOTS, use_state(|| 0_usize)),
-            (TRACES_REQUIRED, use_state(|| 0_usize)),
-            (TRACES_PRICE, use_state(|| 0_usize)),
-            (INNOCENCE_PRICE, use_state(|| 0_usize)),
-            (ARK_INNOCENCE_PRICE, use_state(|| 0_usize)),
-            (WHITE_PRICE, use_state(|| 0_usize)),
+            (FieldId::Diligence, use_state(|| 0_usize)),
+            (FieldId::EnhancementMastery, use_state(|| 0_usize)),
+            (FieldId::UpgradeSalvation, use_state(|| 0_usize)),
+            (FieldId::EnhancementSlots, use_state(|| 0_usize)),
+            (FieldId::TracesRequired, use_state(|| 0_usize)),
+            (FieldId::TracesPrice, use_state(|| 0_usize)),
+            (FieldId::InnocencePrice, use_state(|| 0_usize)),
+            (FieldId::ArkInnocencePrice, use_state(|| 0_usize)),
+            (FieldId::WhitePrice, use_state(|| 0_usize)),
         ]);
 
-        let descript_diligence: Box<dyn Fn(usize) -> String> =
-            Box::new(|diligence: usize| -> String {
-                format!("성공 확률 {}%p 증가", (diligence / 5 * 5) as f64 / 10.0)
-            });
-
-        let descript_enhancement_mastery: Box<dyn Fn(usize) -> String> =
-            Box::new(|enhancement_mastery: usize| -> String {
-                format!("성공 확률 {}%p 증가", enhancement_mastery)
-            });
-
-        let descript_upgrade_salvation: Box<dyn Fn(usize) -> String> =
-            Box::new(|upgrade_salvation: usize| -> String {
-                format!("실패 시 {}% 확률로 횟수 차감 방지", upgrade_salvation)
-            });
-
-        let descriptions = HashMap::from([
-            (DILIGENCE, descript_diligence),
-            (ENHANCEMENT_MASTERY, descript_enhancement_mastery),
-            (UPGRADE_SALVATION, descript_upgrade_salvation),
-        ]);
+        let descript = |id: FieldId, x: usize| -> String {
+            match id {
+                FieldId::Diligence => format!("성공 확률 {}%p 증가", (x / 5 * 5) as f64 / 10.0),
+                FieldId::EnhancementMastery => format!("성공 확률 {}%p 증가", x),
+                FieldId::UpgradeSalvation => format!("실패 시 {}% 확률로 횟수 차감 방지", x),
+                _ => "".to_owned(),
+            }
+        };
 
         let field_item = |field: &Field| -> Html {
             let min = field.min.map(|min| min.to_string());
             let max = field.max.map(|max| max.to_string());
             let onchange = field.onchange(states.clone());
-
-            let description = descriptions
-                .get(field.id)
-                .map(|descript| descript(*states.get(field.id).unwrap().clone()));
+            let id = FieldId::from_str(field.id).unwrap();
+            let description = descript(id.clone(), **states.get(&id).unwrap());
 
             html! {
                 <div>
@@ -237,11 +225,12 @@ fn App() -> Html {
             }
         };
 
-        let field_map: HashMap<&'static str, &Field> =
-            fields.iter().map(|field| (field.id, field)).collect();
+        let field_map: HashMap<FieldId, &Field> =
+            fields.iter().map(|field| (FieldId::from_str(field.id).unwrap(), field)).collect();
 
         let character_fieldset = {
-            let fields = vec![DILIGENCE, ENHANCEMENT_MASTERY, UPGRADE_SALVATION];
+            let fields =
+                vec![FieldId::Diligence, FieldId::EnhancementMastery, FieldId::UpgradeSalvation];
 
             let fields: Vec<&Field> =
                 fields.iter().map(|field| *field_map.get(field).unwrap()).collect();
@@ -265,7 +254,7 @@ fn App() -> Html {
         };
 
         let item_fieldset = {
-            let fields = vec![ENHANCEMENT_SLOTS, TRACES_REQUIRED];
+            let fields = vec![FieldId::EnhancementSlots, FieldId::TracesRequired];
 
             let fields: Vec<&Field> =
                 fields.iter().map(|field| *field_map.get(field).unwrap()).collect();
@@ -283,7 +272,12 @@ fn App() -> Html {
         };
 
         let price_fieldset = {
-            let fields = vec![TRACES_PRICE, INNOCENCE_PRICE, ARK_INNOCENCE_PRICE, WHITE_PRICE];
+            let fields = vec![
+                FieldId::TracesPrice,
+                FieldId::InnocencePrice,
+                FieldId::ArkInnocencePrice,
+                FieldId::WhitePrice,
+            ];
 
             let fields: Vec<&Field> =
                 fields.iter().map(|field| *field_map.get(field).unwrap()).collect();
