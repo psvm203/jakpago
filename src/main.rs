@@ -149,12 +149,14 @@ fn App() -> Html {
             (FieldId::WhitePrice, use_state(|| 0_usize)),
         ]);
 
-        let descript = |id: FieldId, x: usize| -> String {
+        let descript = |id: FieldId, x: usize| -> Option<String> {
             match id {
-                FieldId::Diligence => format!("성공 확률 {}%p 증가", (x / 5 * 5) as f64 / 10.0),
-                FieldId::EnhancementMastery => format!("성공 확률 {}%p 증가", x),
-                FieldId::UpgradeSalvation => format!("실패 시 {}% 확률로 횟수 차감 방지", x),
-                _ => "".to_owned(),
+                FieldId::Diligence => {
+                    Some(format!("성공 확률 {}%p 증가", (x / 5 * 5) as f64 / 10.0))
+                }
+                FieldId::EnhancementMastery => Some(format!("성공 확률 {}%p 증가", x)),
+                FieldId::UpgradeSalvation => Some(format!("실패 시 {}% 확률로 횟수 차감 방지", x)),
+                _ => None,
             }
         };
 
