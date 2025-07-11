@@ -15,7 +15,7 @@ fn App() -> Html {
         #[derive(Clone, Deserialize)]
         struct Theme {
             value: String,
-            name: String,
+            name: &'static str,
         }
 
         let initial_theme = LocalStorage::get::<String>(THEME_STORAGE_KEY)
@@ -40,7 +40,7 @@ fn App() -> Html {
                         type={"radio"}
                         name={"theme-dropdown"}
                         class={"theme-controller w-full btn btn-sm btn-block btn-ghost justify-start"}
-                        aria-label={theme.name.clone()}
+                        aria-label={theme.name}
                         value={theme.value.clone()}
                         checked={theme.value == *theme_state.borrow()}
                         onchange={on_theme_change}
