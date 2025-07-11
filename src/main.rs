@@ -110,26 +110,22 @@ fn App() -> Html {
                     let target = event.target();
                     let input = target.and_then(|t| t.dyn_into::<HtmlInputElement>().ok());
 
-                    if let Some(input) = input {
-                        match input.value().parse::<usize>() {
-                            Ok(value) => {
-                                if let Some(min) = min
-                                    && value < min
-                                {
-                                    return;
-                                }
-
-                                if let Some(max) = max
-                                    && value > max
-                                {
-                                    return;
-                                }
-
-                                state.set(value);
+                    if let Some(input) = input
+                        && let Ok(value) = input.value().parse::<usize>() {
+                            if let Some(min) = min
+                                && value < min
+                            {
+                                return;
                             }
-                            Err(_) => (),
+
+                            if let Some(max) = max
+                                && value > max
+                            {
+                                return;
+                            }
+
+                            state.set(value);
                         }
-                    }
                 })
             }
         }
