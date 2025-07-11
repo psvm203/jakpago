@@ -255,7 +255,7 @@ fn App() -> Html {
             fieldset_item("캐릭터 정보", contents)
         };
 
-        let item_fieldset = {
+        let equipment_fieldset = {
             let buttons = vec!["100%", "70%", "30%", "15%"];
 
             let button_item = |label: &str| -> Html {
@@ -277,13 +277,13 @@ fn App() -> Html {
 
             let contents = html! {
                 <div>
-                    { search_input("아이템 검색", html!{}) }
+                    { search_input("장비 검색", html!{}) }
                     { button_items }
                     { field_items }
                 </div>
             };
 
-            fieldset_item("아이템 정보", contents)
+            fieldset_item("장비 정보", contents)
         };
 
         let price_fieldset = {
@@ -311,7 +311,7 @@ fn App() -> Html {
         html! {
             <div class={"grid grid-cols-6 gap-48 p-16"}>
                 { character_fieldset }
-                { item_fieldset }
+                { equipment_fieldset }
                 { price_fieldset }
             </div>
         }
