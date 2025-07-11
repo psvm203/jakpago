@@ -154,8 +154,8 @@ fn App() -> Html {
                 FieldId::Diligence => {
                     Some(format!("성공 확률 {}%p 증가", (x / 5 * 5) as f64 / 10.0))
                 }
-                FieldId::EnhancementMastery => Some(format!("성공 확률 {}%p 증가", x)),
-                FieldId::UpgradeSalvation => Some(format!("실패 시 {}% 확률로 횟수 차감 방지", x)),
+                FieldId::EnhancementMastery => Some(format!("성공 확률 {x}%p 증가")),
+                FieldId::UpgradeSalvation => Some(format!("실패 시 {x}% 확률로 횟수 차감 방지")),
                 _ => None,
             }
         };
