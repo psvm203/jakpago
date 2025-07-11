@@ -16,7 +16,7 @@
   min: 0
   max: 4
   description: 실패 시 n% 확률로 횟수 차감 방지
-- id: EnhancementSlots
+- id: UpgradeableCount
   label: 주문서 강화 가능 횟수
   placeholder: 1 ~ 12
   min: 1
