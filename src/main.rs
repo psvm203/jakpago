@@ -242,7 +242,7 @@ fn App() -> Html {
 
         let character_fieldset = {
             let fields =
-                vec![FieldId::Diligence, FieldId::EnhancementMastery, FieldId::UpgradeSalvation];
+                [FieldId::Diligence, FieldId::EnhancementMastery, FieldId::UpgradeSalvation];
 
             let fields: Vec<&Field> =
                 fields.iter().map(|field| *field_map.get(field).unwrap()).collect();
@@ -317,7 +317,7 @@ fn App() -> Html {
                 </datalist>
             };
 
-            let buttons = vec!["100%", "70%", "30%", "15%"];
+            let buttons = ["100%", "70%", "30%", "15%"];
 
             let button_item = |label: &str| -> Html {
                 html! {
@@ -329,7 +329,7 @@ fn App() -> Html {
 
             let button_items: Html = buttons.into_iter().map(button_item).collect();
 
-            let fields = vec![FieldId::UpgradeableCount, FieldId::TraceRequired];
+            let fields = [FieldId::UpgradeableCount, FieldId::TraceRequired];
 
             let fields: Vec<&Field> =
                 fields.iter().map(|field| *field_map.get(field).unwrap()).collect();
@@ -350,7 +350,7 @@ fn App() -> Html {
         };
 
         let price_fieldset = {
-            let fields = vec![
+            let fields = [
                 FieldId::TracePrice,
                 FieldId::InnocencePrice,
                 FieldId::ArkInnocencePrice,
