@@ -247,7 +247,7 @@ fn App() -> Html {
             let fields: Vec<&Field> =
                 fields.iter().map(|field| *field_map.get(field).unwrap()).collect();
 
-            let field_items: Html = fields.into_iter().map(|field| field_item(field)).collect();
+            let field_items: Html = fields.into_iter().map(&field_item).collect();
 
             let keyboard = html! {
                 <kbd class={"kbd kbd-sm"}>
@@ -334,7 +334,7 @@ fn App() -> Html {
             let fields: Vec<&Field> =
                 fields.iter().map(|field| *field_map.get(field).unwrap()).collect();
 
-            let field_items: Html = fields.into_iter().map(|field| field_item(field)).collect();
+            let field_items: Html = fields.into_iter().map(&field_item).collect();
 
             let contents = html! {
                 <div>
@@ -360,7 +360,7 @@ fn App() -> Html {
             let fields: Vec<&Field> =
                 fields.iter().map(|field| *field_map.get(field).unwrap()).collect();
 
-            let field_items: Html = fields.into_iter().map(|field| field_item(field)).collect();
+            let field_items: Html = fields.into_iter().map(&field_item).collect();
 
             let contents = html! {
                 <div>
