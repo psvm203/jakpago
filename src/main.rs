@@ -127,7 +127,7 @@ fn App() -> Html {
 
                                 state.set(value);
                             }
-                            Err(_) => return,
+                            Err(_) => (),
                         }
                     }
                 })
