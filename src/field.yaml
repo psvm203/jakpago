@@ -22,7 +22,7 @@
   min: 1
   max: 12
 - id: TraceRequired
-  label: 주문의 흔적 요구량
+  label: 주문의 흔적 필요 갯수
   placeholder: "0"
   min: 0
 - id: TracePrice
