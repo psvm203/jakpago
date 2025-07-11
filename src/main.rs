@@ -1,6 +1,6 @@
 use gloo_storage::{LocalStorage, Storage};
 use serde::Deserialize;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::str::FromStr;
 use strum_macros::{Display, EnumString};
 use web_sys::{HtmlInputElement, wasm_bindgen::JsCast};
@@ -202,36 +202,40 @@ fn App() -> Html {
             }
         };
 
-        let search_input =
-            |placeholder: &str, list_id: Option<&'static str>, contents: Option<Html>| -> Html {
-                html! {
-                    <label class={"input"}>
-                        <svg
-                            class={"h-[1em] opacity-50"}
-                            xmlns={"http://www.w3.org/2000/svg"}
-                            viewBox={"0 0 24 24"}
+        let search_input = |placeholder: &str,
+                            onchange: Option<Callback<Event>>,
+                            list_id: Option<&'static str>,
+                            contents: Option<Html>|
+         -> Html {
+            html! {
+                <label class={"input"}>
+                    <svg
+                        class={"h-[1em] opacity-50"}
+                        xmlns={"http://www.w3.org/2000/svg"}
+                        viewBox={"0 0 24 24"}
+                    >
+                        <g
+                            stroke-linejoin={"round"}
+                            stroke-linecap={"round"}
+                            stroke-width={"2.5"}
+                            fill={"none"}
+                            stroke={"currentColor"}
                         >
-                            <g
-                                stroke-linejoin={"round"}
-                                stroke-linecap={"round"}
-                                stroke-width={"2.5"}
-                                fill={"none"}
-                                stroke={"currentColor"}
-                            >
-                                <circle cx={"11"} cy={"11"} r={"8"} />
-                                <path d={"m21 21-4.3-4.3"} />
-                            </g>
-                        </svg>
-                        <input
-                            type={"search"}
-                            class={"grow"}
-                            placeholder={placeholder.to_owned()}
-                            list={list_id}
-                        />
-                        { contents }
-                    </label>
-                }
-            };
+                            <circle cx={"11"} cy={"11"} r={"8"} />
+                            <path d={"m21 21-4.3-4.3"} />
+                        </g>
+                    </svg>
+                    <input
+                        type={"search"}
+                        class={"grow"}
+                        placeholder={placeholder.to_owned()}
+                        {onchange}
+                        list={list_id}
+                    />
+                    { contents }
+                </label>
+            }
+        };
 
         let field_map: HashMap<FieldId, &Field> =
             fields.iter().map(|field| (FieldId::from_str(field.id).unwrap(), field)).collect();
@@ -253,7 +257,7 @@ fn App() -> Html {
 
             let contents = html! {
                 <div>
-                    { search_input("캐릭터 검색", None, Some(keyboard)) }
+                    { search_input("캐릭터 검색", None, None, Some(keyboard)) }
                     { field_items }
                 </div>
             };
@@ -263,6 +267,7 @@ fn App() -> Html {
 
         let equipment_fieldset = {
             const EQUIPMENT_LIST_ID: &str = "equipments";
+            const EQUIPMENT_NONE: &str = "없음";
 
             #[allow(dead_code)]
             #[derive(Deserialize)]
@@ -276,6 +281,28 @@ fn App() -> Html {
 
             let equipment_data = include_str!("equipment.yaml");
             let equipments: Vec<Equipment> = serde_yaml::from_str(equipment_data).unwrap();
+
+            let equipment_set: HashSet<&str> =
+                equipments.iter().map(|equipment| equipment.name).collect();
+
+            let equipment_search_state = use_state(|| EQUIPMENT_NONE.to_owned());
+
+            let equipment_search = {
+                let state = equipment_search_state.clone();
+
+                Callback::from(move |event: Event| {
+                    let target = event.target();
+                    let input = target.and_then(|t| t.dyn_into::<HtmlInputElement>().ok());
+
+                    if let Some(input) = input {
+                        let value = &input.value();
+
+                        if equipment_set.contains(value.as_str()) {
+                            state.set((*value).clone());
+                        }
+                    }
+                })
+            };
 
             let suggestion_item = |name: &'static str| -> Html {
                 html! { <option value={name} /> }
@@ -311,9 +338,10 @@ fn App() -> Html {
 
             let contents = html! {
                 <div>
-                    { search_input("장비 검색", Some(EQUIPMENT_LIST_ID), None) }
+                    { search_input("장비 검색", Some(equipment_search), Some(EQUIPMENT_LIST_ID), None) }
                     { suggestion }
                     { button_items }
+                    { format!("\n선택된 장비: {}", (*equipment_search_state).clone()) }
                     { field_items }
                 </div>
             };
