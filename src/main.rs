@@ -113,16 +113,16 @@ fn App() -> Html {
                     if let Some(input) = input {
                         match input.value().parse::<usize>() {
                             Ok(value) => {
-                                if let Some(min) = min {
-                                    if value < min {
-                                        return;
-                                    }
+                                if let Some(min) = min
+                                    && value < min
+                                {
+                                    return;
                                 }
 
-                                if let Some(max) = max {
-                                    if value > max {
-                                        return;
-                                    }
+                                if let Some(max) = max
+                                    && value > max
+                                {
+                                    return;
                                 }
 
                                 state.set(value);
