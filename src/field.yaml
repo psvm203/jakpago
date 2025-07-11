@@ -18,13 +18,13 @@
   description: 실패 시 n% 확률로 횟수 차감 방지
 - id: EnhancementSlots
   label: 주문서 강화 가능 횟수
-  placeholder: 1 ~ 23
+  placeholder: 1 ~ 12
   min: 1
-  max: 23
+  max: 12
 - id: TraceRequired
   label: 주문의 흔적 요구량
-  placeholder: "1"
-  min: 1
+  placeholder: "0"
+  min: 0
 - id: TracePrice
   label: 주문의 흔적 시세
   placeholder: "0"
