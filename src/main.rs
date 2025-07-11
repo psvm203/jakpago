@@ -202,30 +202,36 @@ fn App() -> Html {
             }
         };
 
-        let search_input = |placeholder: &str, contents: Html| -> Html {
-            html! {
-                <label class={"input"}>
-                    <svg
-                        class={"h-[1em] opacity-50"}
-                        xmlns={"http://www.w3.org/2000/svg"}
-                        viewBox={"0 0 24 24"}
-                    >
-                        <g
-                            stroke-linejoin={"round"}
-                            stroke-linecap={"round"}
-                            stroke-width={"2.5"}
-                            fill={"none"}
-                            stroke={"currentColor"}
+        let search_input =
+            |placeholder: &str, list_id: Option<&'static str>, contents: Option<Html>| -> Html {
+                html! {
+                    <label class={"input"}>
+                        <svg
+                            class={"h-[1em] opacity-50"}
+                            xmlns={"http://www.w3.org/2000/svg"}
+                            viewBox={"0 0 24 24"}
                         >
-                            <circle cx={"11"} cy={"11"} r={"8"} />
-                            <path d={"m21 21-4.3-4.3"} />
-                        </g>
-                    </svg>
-                    <input type={"search"} class={"grow"} placeholder={placeholder.to_owned()} />
-                    { contents }
-                </label>
-            }
-        };
+                            <g
+                                stroke-linejoin={"round"}
+                                stroke-linecap={"round"}
+                                stroke-width={"2.5"}
+                                fill={"none"}
+                                stroke={"currentColor"}
+                            >
+                                <circle cx={"11"} cy={"11"} r={"8"} />
+                                <path d={"m21 21-4.3-4.3"} />
+                            </g>
+                        </svg>
+                        <input
+                            type={"search"}
+                            class={"grow"}
+                            placeholder={placeholder.to_owned()}
+                            list={list_id}
+                        />
+                        { contents }
+                    </label>
+                }
+            };
 
         let field_map: HashMap<FieldId, &Field> =
             fields.iter().map(|field| (FieldId::from_str(field.id).unwrap(), field)).collect();
@@ -247,7 +253,7 @@ fn App() -> Html {
 
             let contents = html! {
                 <div>
-                    { search_input("캐릭터 검색", keyboard) }
+                    { search_input("캐릭터 검색", None, Some(keyboard)) }
                     { field_items }
                 </div>
             };
@@ -256,6 +262,34 @@ fn App() -> Html {
         };
 
         let equipment_fieldset = {
+            const EQUIPMENT_LIST_ID: &str = "equipments";
+
+            #[allow(dead_code)]
+            #[derive(Deserialize)]
+            struct Equipment {
+                name: &'static str,
+                alias: Option<Vec<&'static str>>,
+                class: &'static str,
+                level: usize,
+                count: usize,
+            }
+
+            let equipment_data = include_str!("equipment.yaml");
+            let equipments: Vec<Equipment> = serde_yaml::from_str(equipment_data).unwrap();
+
+            let suggestion_item = |name: &'static str| -> Html {
+                html! { <option value={name} /> }
+            };
+
+            let suggestion_items: Html =
+                equipments.into_iter().map(|equipment| suggestion_item(equipment.name)).collect();
+
+            let suggestion = html! {
+                <datalist id={EQUIPMENT_LIST_ID}>
+                    { suggestion_items }
+                </datalist>
+            };
+
             let buttons = vec!["100%", "70%", "30%", "15%"];
 
             let button_item = |label: &str| -> Html {
@@ -277,7 +311,8 @@ fn App() -> Html {
 
             let contents = html! {
                 <div>
-                    { search_input("장비 검색", html!{}) }
+                    { search_input("장비 검색", Some(EQUIPMENT_LIST_ID), None) }
+                    { suggestion }
                     { button_items }
                     { field_items }
                 </div>
