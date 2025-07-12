@@ -1,6 +1,6 @@
 use gloo_storage::{LocalStorage, Storage};
 use serde::Deserialize;
-use std::collections::{HashMap};
+use std::collections::HashMap;
 use std::str::FromStr;
 use strum_macros::{Display, EnumString};
 use web_sys::{HtmlInputElement, wasm_bindgen::JsCast};
@@ -277,7 +277,7 @@ fn App() -> Html {
             const EQUIPMENT_NONE: &str = "없음";
 
             #[allow(dead_code)]
-            #[derive(Clone,Deserialize)]
+            #[derive(Clone, Deserialize)]
             struct Equipment {
                 name: &'static str,
                 alias: Option<Vec<&'static str>>,
