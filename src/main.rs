@@ -344,7 +344,6 @@ fn App() -> Html {
                     { search_input("장비 검색", Some(equipment_search), Some(EQUIPMENT_LIST_ID), None) }
                     { suggestion }
                     { button_items }
-                    { format!("\n선택된 장비: {}", (*equipment_search_state).clone()) }
                     { field_items }
                 </div>
             };
