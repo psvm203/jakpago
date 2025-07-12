@@ -309,6 +309,8 @@ fn App() -> Html {
                         if let Some(equipment) = equipment_map.get(value.as_str()) {
                             state.set(equipment.name.to_owned());
                             upgradeable_count_state.set(equipment.count);
+                        } else {
+                            state.set(EQUIPMENT_NONE.to_owned());
                         }
                     }
                 })
