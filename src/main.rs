@@ -1,6 +1,6 @@
 use gloo_storage::{LocalStorage, Storage};
 use serde::Deserialize;
-use std::collections::{HashMap, HashSet};
+use std::collections::{HashMap};
 use std::str::FromStr;
 use strum_macros::{Display, EnumString};
 use web_sys::{HtmlInputElement, wasm_bindgen::JsCast};
@@ -162,6 +162,7 @@ fn App() -> Html {
             let max = field.max.map(|max| max.to_string());
             let onchange = field.onchange(states.clone());
             let id = FieldId::from_str(field.id).unwrap();
+            let value = (**states.get(&id).unwrap()).to_string();
             let description = get_description(id.clone(), **states.get(&id).unwrap());
 
             html! {
@@ -175,6 +176,7 @@ fn App() -> Html {
                         class={"input validator"}
                         required={true}
                         placeholder={field.placeholder}
+                        {value}
                         {min}
                         {max}
                         {onchange}
@@ -275,7 +277,7 @@ fn App() -> Html {
             const EQUIPMENT_NONE: &str = "없음";
 
             #[allow(dead_code)]
-            #[derive(Deserialize)]
+            #[derive(Clone,Deserialize)]
             struct Equipment {
                 name: &'static str,
                 alias: Option<Vec<&'static str>>,
@@ -287,13 +289,16 @@ fn App() -> Html {
             let equipment_data = include_str!("equipment.yaml");
             let equipments: Vec<Equipment> = serde_yaml::from_str(equipment_data).unwrap();
 
-            let equipment_set: HashSet<&str> =
-                equipments.iter().map(|equipment| equipment.name).collect();
+            let equipment_map: HashMap<&str, Equipment> =
+                equipments.iter().map(|equipment| (equipment.name, equipment.clone())).collect();
 
             let equipment_search_state = use_state(|| EQUIPMENT_NONE.to_owned());
 
             let equipment_search = {
                 let state = equipment_search_state.clone();
+
+                let upgradeable_count_state =
+                    states.get(&FieldId::UpgradeableCount).unwrap().clone();
 
                 Callback::from(move |event: Event| {
                     let target = event.target();
@@ -302,8 +307,9 @@ fn App() -> Html {
                     if let Some(input) = input {
                         let value = &input.value();
 
-                        if equipment_set.contains(value.as_str()) {
-                            state.set((*value).clone());
+                        if let Some(equipment) = equipment_map.get(value.as_str()) {
+                            state.set(equipment.name.to_owned());
+                            upgradeable_count_state.set(equipment.count);
                         }
                     }
                 })
@@ -314,7 +320,7 @@ fn App() -> Html {
             };
 
             let suggestion_items: Html =
-                equipments.into_iter().map(|equipment| suggestion_item(equipment.name)).collect();
+                equipments.iter().map(|equipment| suggestion_item(equipment.name)).collect();
 
             let suggestion = html! {
                 <datalist id={EQUIPMENT_LIST_ID}>
