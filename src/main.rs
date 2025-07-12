@@ -101,8 +101,7 @@ fn App() -> Html {
         }
 
         impl Field {
-            fn onchange(&self, states: HashMap<FieldId, UseStateHandle<usize>>) -> Callback<Event> {
-                let state = states.get(&FieldId::from_str(self.id).unwrap()).unwrap().clone();
+            fn onchange(&self, state: UseStateHandle<usize>) -> Callback<Event> {
                 let min = self.min;
                 let max = self.max;
 
@@ -160,8 +159,8 @@ fn App() -> Html {
         let field_item = |field: &Field| -> Html {
             let min = field.min.map(|min| min.to_string());
             let max = field.max.map(|max| max.to_string());
-            let onchange = field.onchange(states.clone());
             let id = FieldId::from_str(field.id).unwrap();
+            let onchange = field.onchange((*states.get(&id).unwrap()).clone());
             let value = (**states.get(&id).unwrap()).to_string();
             let description = get_description(id.clone(), **states.get(&id).unwrap());
 
