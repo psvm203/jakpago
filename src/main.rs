@@ -3,7 +3,7 @@ use serde::Deserialize;
 use std::collections::{HashMap, HashSet};
 use std::str::FromStr;
 use strum_macros::{Display, EnumString};
-use web_sys::{HtmlInputElement, wasm_bindgen::JsCast};
+use web_sys::{wasm_bindgen::JsCast, HtmlInputElement};
 use yew::prelude::*;
 
 #[function_component]
@@ -111,21 +111,22 @@ fn App() -> Html {
                     let input = target.and_then(|t| t.dyn_into::<HtmlInputElement>().ok());
 
                     if let Some(input) = input
-                        && let Ok(value) = input.value().parse::<usize>() {
-                            if let Some(min) = min
-                                && value < min
-                            {
-                                return;
-                            }
-
-                            if let Some(max) = max
-                                && value > max
-                            {
-                                return;
-                            }
-
-                            state.set(value);
+                        && let Ok(value) = input.value().parse::<usize>()
+                    {
+                        if let Some(min) = min
+                            && value < min
+                        {
+                            return;
                         }
+
+                        if let Some(max) = max
+                            && value > max
+                        {
+                            return;
+                        }
+
+                        state.set(value);
+                    }
                 })
             }
         }
