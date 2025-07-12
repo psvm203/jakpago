@@ -384,10 +384,14 @@ fn App() -> Html {
                 buttons.into_iter().map(&button_item).collect()
             };
 
+            let sunday_button: Html =
+                { button_item("썬데이 메이플: 강화 비용 50% 할인") };
+
             let contents = html! {
                 <div>
                     { fever_buttons }
                     { innocence_buttons }
+                    { sunday_button }
                 </div>
             };
 
