@@ -11,6 +11,7 @@ fn App() -> Html {
     let theme_controller = {
         const THEME_STORAGE_KEY: &str = "theme";
         const THEME_DEFAULT_VALUE: &str = "default";
+        const THEME_LABEL: &str = "테마";
 
         #[derive(Clone, Deserialize)]
         struct Theme {
@@ -56,7 +57,7 @@ fn App() -> Html {
         html! {
             <div class={"dropdown mb-72 absolute right-48"}>
                 <div tabindex={"0"} role={"button"} class={"btn m-1"}>
-                    { "테마" }
+                    { THEME_LABEL }
                     <svg
                         width={"12px"}
                         height={"12px"}
@@ -78,6 +79,13 @@ fn App() -> Html {
     };
 
     let fieldsets = {
+        const CHARACTER_SEARCH: &str = "캐릭터 검색";
+        const EQUIPMENT_SEARCH: &str = "장비 검색";
+        const CHARACTER_INFORMATION: &str = "캐릭터 정보";
+        const EQUIPMENT_INFORMATION: &str = "장비 정보";
+        const PRICE_INFORMATION: &str = "시세 정보";
+        const ADDITIONAL_CONFIGURATION: &str = "추가 설정";
+
         #[derive(Clone, Display, EnumString, Eq, Hash, PartialEq)]
         enum FieldId {
             Diligence,
@@ -255,12 +263,12 @@ fn App() -> Html {
 
             let contents = html! {
                 <div>
-                    { search_input("캐릭터 검색", None, None, Some(keyboard)) }
+                    { search_input(CHARACTER_SEARCH, None, None, Some(keyboard)) }
                     { field_items }
                 </div>
             };
 
-            fieldset_item("캐릭터 정보", contents)
+            fieldset_item(CHARACTER_INFORMATION, contents)
         };
 
         let button_item = |label: &str| -> Html {
@@ -341,14 +349,14 @@ fn App() -> Html {
 
             let contents = html! {
                 <div>
-                    { search_input("장비 검색", Some(equipment_search), Some(EQUIPMENT_LIST_ID), None) }
+                    { search_input(EQUIPMENT_SEARCH, Some(equipment_search), Some(EQUIPMENT_LIST_ID), None) }
                     { suggestion }
                     { button_items }
                     { field_items }
                 </div>
             };
 
-            fieldset_item("장비 정보", contents)
+            fieldset_item(EQUIPMENT_INFORMATION, contents)
         };
 
         let price_fieldset = {
@@ -370,7 +378,7 @@ fn App() -> Html {
                 </div>
             };
 
-            fieldset_item("시세 정보", contents)
+            fieldset_item(PRICE_INFORMATION, contents)
         };
 
         let additional_fieldset = {
@@ -395,7 +403,7 @@ fn App() -> Html {
                 </div>
             };
 
-            fieldset_item("추가 설정", contents)
+            fieldset_item(ADDITIONAL_CONFIGURATION, contents)
         };
 
         html! {
