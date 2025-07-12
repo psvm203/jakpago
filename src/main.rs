@@ -262,6 +262,14 @@ fn App() -> Html {
             fieldset_item("캐릭터 정보", contents)
         };
 
+        let button_item = |label: &str| -> Html {
+            html! {
+                <button class={"btn btn-info"}>
+                    { label }
+                </button>
+            }
+        };
+
         let equipment_fieldset = {
             const EQUIPMENT_LIST_ID: &str = "equipments";
             const EQUIPMENT_NONE: &str = "없음";
@@ -315,15 +323,6 @@ fn App() -> Html {
             };
 
             let buttons = ["100%", "70%", "30%", "15%"];
-
-            let button_item = |label: &str| -> Html {
-                html! {
-                    <button class={"btn btn-info"}>
-                        { label }
-                    </button>
-                }
-            };
-
             let button_items: Html = buttons.into_iter().map(button_item).collect();
 
             let fields = [FieldId::UpgradeableCount, FieldId::TraceRequired];
@@ -368,11 +367,33 @@ fn App() -> Html {
             fieldset_item("시세 정보", contents)
         };
 
+        let additional_fieldset = {
+            let fever_buttons: Html = {
+                let buttons = ["피버 타임 O", "피버 타임 X"];
+                buttons.into_iter().map(&button_item).collect()
+            };
+
+            let innocence_buttons: Html = {
+                let buttons = ["이노센트 주문서", "아크 이노센트 주문서"];
+                buttons.into_iter().map(&button_item).collect()
+            };
+
+            let contents = html! {
+                <div>
+                    { fever_buttons }
+                    { innocence_buttons }
+                </div>
+            };
+
+            fieldset_item("추가 설정", contents)
+        };
+
         html! {
             <div class={"grid grid-cols-6 gap-48 p-16"}>
                 { character_fieldset }
                 { equipment_fieldset }
                 { price_fieldset }
+                { additional_fieldset }
             </div>
         }
     };
