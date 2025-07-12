@@ -3,7 +3,7 @@ use serde::Deserialize;
 use std::collections::{HashMap, HashSet};
 use std::str::FromStr;
 use strum_macros::{Display, EnumString};
-use web_sys::{wasm_bindgen::JsCast, HtmlInputElement};
+use web_sys::{HtmlInputElement, wasm_bindgen::JsCast};
 use yew::prelude::*;
 
 #[function_component]
