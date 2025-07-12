@@ -146,7 +146,7 @@ fn App() -> Html {
             (FieldId::WhitePrice, use_state(|| 0_usize)),
         ]);
 
-        let descript = |id: FieldId, x: usize| -> Option<String> {
+        let get_description = |id: FieldId, x: usize| -> Option<String> {
             match id {
                 FieldId::Diligence => {
                     Some(format!("성공 확률 {}%p 증가", (x / 5 * 5) as f64 / 10.0))
@@ -162,7 +162,7 @@ fn App() -> Html {
             let max = field.max.map(|max| max.to_string());
             let onchange = field.onchange(states.clone());
             let id = FieldId::from_str(field.id).unwrap();
-            let description = descript(id.clone(), **states.get(&id).unwrap());
+            let description = get_description(id.clone(), **states.get(&id).unwrap());
 
             html! {
                 <div>
