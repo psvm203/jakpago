@@ -4,7 +4,7 @@ use yew::{Callback, Event, Html, function_component, html};
 use yew_hooks::{UseLocalStorageHandle, use_effect_once, use_local_storage};
 
 const THEME_DATA: &str = include_str!("theme.yaml");
-const THEME_ERROR_MESSAGE: &str = "테마 파일 오류:";
+const THEME_ERROR_MESSAGE: &str = "테마 데이터 오류:";
 const THEME_STORAGE_KEY: &str = "theme";
 const THEME_DEFAULT_VALUE: &str = "default";
 const THEME_LABEL: &str = "테마";
