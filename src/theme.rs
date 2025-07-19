@@ -37,7 +37,7 @@ fn on_theme_change(
 
 fn theme_item(theme_state: &UseLocalStorageHandle<String>, theme: &Theme) -> Html {
     let current_theme = theme_state.as_deref().unwrap_or(THEME_DEFAULT_VALUE);
-    let onchange = on_theme_change(&theme_state, theme.value);
+    let onchange = on_theme_change(theme_state, theme.value);
 
     html! {
         <li key={theme.value}>
