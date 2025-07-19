@@ -1,10 +1,10 @@
-use gloo_storage::{LocalStorage, Storage};
 use serde::Deserialize;
 use std::collections::HashMap;
 use std::str::FromStr;
 use strum_macros::{Display, EnumString};
 use web_sys::{HtmlInputElement, wasm_bindgen::JsCast};
 use yew::prelude::*;
+use yew_hooks::prelude::*;
 
 #[function_component]
 fn App() -> Html {
@@ -19,10 +19,19 @@ fn App() -> Html {
             name: &'static str,
         }
 
-        let initial_theme = LocalStorage::get::<String>(THEME_STORAGE_KEY)
-            .unwrap_or_else(|_| THEME_DEFAULT_VALUE.to_owned());
+        let theme_state = use_local_storage::<String>(THEME_STORAGE_KEY.to_owned());
 
-        let theme_state = use_mut_ref(|| initial_theme);
+        {
+            let theme_state = theme_state.clone();
+
+            use_effect_once(move || {
+                if theme_state.is_none() {
+                    theme_state.set(THEME_DEFAULT_VALUE.to_owned());
+                }
+
+                || {}
+            });
+        }
 
         let theme_item = |theme: &Theme| -> Html {
             let on_theme_change = {
@@ -30,10 +39,11 @@ fn App() -> Html {
                 let theme_value = theme.value.clone();
 
                 move |_| {
-                    *theme_state.borrow_mut() = theme_value.clone();
-                    LocalStorage::set(THEME_STORAGE_KEY, theme_value.clone()).unwrap();
+                    theme_state.set(theme_value.clone());
                 }
             };
+
+            let current_theme = theme_state.as_deref().unwrap();
 
             html! {
                 <li key={theme.value.clone()}>
@@ -43,7 +53,7 @@ fn App() -> Html {
                         class={"theme-controller w-full btn btn-sm btn-block btn-ghost justify-start"}
                         aria-label={theme.name}
                         value={theme.value.clone()}
-                        checked={theme.value == *theme_state.borrow()}
+                        checked={theme.value == current_theme}
                         onchange={on_theme_change}
                     />
                 </li>
