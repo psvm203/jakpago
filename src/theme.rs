@@ -1,6 +1,6 @@
 use serde::Deserialize;
-use yew::prelude::*;
-use yew_hooks::prelude::*;
+use yew::{Callback, Event, Html, function_component, html};
+use yew_hooks::{UseLocalStorageHandle, use_effect_once, use_local_storage};
 
 const THEME_STORAGE_KEY: &str = "theme";
 const THEME_DEFAULT_VALUE: &str = "default";
