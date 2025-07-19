@@ -1,7 +1,9 @@
+use gloo_console::error;
 use serde::Deserialize;
 use yew::{Callback, Event, Html, function_component, html};
 use yew_hooks::{UseLocalStorageHandle, use_effect_once, use_local_storage};
 
+const THEME_ERROR_MESSAGE: &str = "테마 파일 오류:";
 const THEME_STORAGE_KEY: &str = "theme";
 const THEME_DEFAULT_VALUE: &str = "default";
 const THEME_LABEL: &str = "테마";
@@ -10,6 +12,16 @@ const THEME_LABEL: &str = "테마";
 struct Theme {
     value: &'static str,
     name: &'static str,
+}
+
+fn load_themes(theme_data: &'static str) -> Vec<Theme> {
+    match serde_yaml::from_str(theme_data) {
+        Ok(themes) => themes,
+        Err(err) => {
+            error!(THEME_ERROR_MESSAGE, err.to_string());
+            vec![]
+        }
+    }
 }
 
 fn on_theme_change(
@@ -59,7 +71,7 @@ pub fn ThemeController() -> Html {
     }
 
     let theme_data = include_str!("theme.yaml");
-    let themes: Vec<Theme> = serde_yaml::from_str(theme_data).unwrap();
+    let themes = load_themes(theme_data);
 
     let theme_items: Html =
         themes.into_iter().map(|theme| theme_item(&theme_state, &theme)).collect();
