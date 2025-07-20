@@ -1,4 +1,3 @@
-use gloo_console::error;
 use serde::Deserialize;
 use yew::{Callback, Event, Html, function_component, html};
 use yew_hooks::{UseLocalStorageHandle, use_effect_once, use_local_storage};
@@ -19,7 +18,7 @@ fn load_themes() -> Vec<Theme> {
     match serde_yaml::from_str(THEME_DATA) {
         Ok(themes) => themes,
         Err(err) => {
-            error!(THEME_ERROR_MESSAGE, err.to_string());
+            gloo_console::error!(THEME_ERROR_MESSAGE, err.to_string());
             vec![]
         }
     }
