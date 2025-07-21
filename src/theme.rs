@@ -3,7 +3,7 @@ use yew::{Callback, Event, Html, function_component, html};
 use yew_hooks::{UseLocalStorageHandle, use_effect_once, use_local_storage};
 
 const THEME_DATA: &str = include_str!("theme.yaml");
-const THEME_ERROR_MESSAGE: &str = "테마 데이터 오류:";
+const THEME_DATA_ERROR_MESSAGE: &str = "테마 데이터 오류:";
 const THEME_STORAGE_KEY: &str = "theme";
 const THEME_DEFAULT_VALUE: &str = "default";
 const THEME_LABEL: &str = "테마";
@@ -18,7 +18,7 @@ fn load_themes() -> Vec<Theme> {
     match serde_yaml::from_str(THEME_DATA) {
         Ok(themes) => themes,
         Err(err) => {
-            gloo_console::error!(THEME_ERROR_MESSAGE, err.to_string());
+            gloo_console::error!(THEME_DATA_ERROR_MESSAGE, err.to_string());
             vec![]
         }
     }
