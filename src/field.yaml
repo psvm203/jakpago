@@ -3,41 +3,28 @@
   placeholder: 0 ~ 100
   min: 0
   max: 100
-  description: 성공 확률 n%p 증가
 - id: EnhancementMastery
   label: 강화의 달인
   placeholder: 0 ~ 4
   min: 0
   max: 4
-  description: 성공 확률 n%p 증가
 - id: UpgradeSalvation
   label: 실패를 두려워 않는
   placeholder: 0 ~ 4
   min: 0
   max: 4
-  description: 실패 시 n% 확률로 횟수 차감 방지
 - id: UpgradeableCount
   label: 주문서 강화 가능 횟수
   placeholder: 1 ~ 12
   min: 1
   max: 12
 - id: TraceRequired
-  label: 주문의 흔적 필요 갯수
-  placeholder: "0"
+  label: 주문의 흔적 필요 갯수 (썬데이 미적용 기준)
+  placeholder: 0
   min: 0
+  max: 10000
 - id: TracePrice
   label: 주문의 흔적 시세
-  placeholder: "0"
+  placeholder: 0
   min: 0
-- id: InnocencePrice
-  label: 이노센트 주문서 시세
-  placeholder: "0"
-  min: 0
-- id: ArkInnocencePrice
-  label: 아크 이노센트 주문서 시세
-  placeholder: "0"
-  min: 0
-- id: WhitePrice
-  label: 순백의 주문서 시세
-  placeholder: "0"
-  min: 0
+  max: 100000
