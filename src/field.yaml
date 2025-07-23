@@ -20,11 +20,11 @@
   max: 12
 - id: TraceRequired
   label: 주문의 흔적 필요 갯수 (썬데이 미적용 기준)
-  placeholder: 0
+  placeholder: "0"
   min: 0
   max: 10000
 - id: TracePrice
   label: 주문의 흔적 시세
-  placeholder: 0
+  placeholder: "0"
   min: 0
   max: 100000
