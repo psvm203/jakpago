@@ -1,8 +1,8 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use web_sys::{HtmlInputElement, wasm_bindgen::JsCast};
-use yew::{Callback, Event, Html, function_component, html};
-use yew_hooks::{UseMapHandle, use_effect_once, use_local_storage, use_map};
+use yew::{Callback, Event, Html, MouseEvent, function_component, html};
+use yew_hooks::{UseLocalStorageHandle, UseMapHandle, use_effect_once, use_local_storage, use_map};
 
 const FIELD_DATA: &str = include_str!("field.yaml");
 const FIELD_DATA_ERROR_MESSAGE: &str = "필드 데이터 오류:";
@@ -10,8 +10,9 @@ const FIELD_STORAGE_KEY: &str = "field";
 const POTENTIAL_LEGEND: &str = "확률 정보";
 const EQUIPMENT_LEGEND: &str = "장비 정보";
 const PRICE_LEGEND: &str = "시세 정보";
+const CALCULATE: &str = "계산";
 
-#[derive(Copy, Clone, Hash, Deserialize, Eq, PartialEq)]
+#[derive(Copy, Clone, Hash, Deserialize, Eq, PartialEq, Serialize)]
 enum FieldId {
     Diligence,
     EnhancementMastery,
@@ -123,6 +124,39 @@ fn fieldset_item(legend: &'static str, contents: Html) -> Html {
     }
 }
 
+fn calculate(
+    fields: &HashMap<FieldId, Field>,
+    field_states: &UseMapHandle<FieldId, usize>,
+    field_storage: &UseLocalStorageHandle<HashMap<FieldId, usize>>,
+) -> Callback<MouseEvent> {
+    let storage = field_storage.clone();
+
+    let map: HashMap<FieldId, usize> = field_states
+        .current()
+        .iter()
+        .filter(|&(id, &value)| fields[id].min <= value && value <= fields[id].max)
+        .map(|(&id, &value)| (id, value))
+        .collect();
+
+    Callback::from(move |_| {
+        storage.set(map.clone());
+    })
+}
+
+fn calculate_button(
+    fields: &HashMap<FieldId, Field>,
+    field_states: &UseMapHandle<FieldId, usize>,
+    field_storage: &UseLocalStorageHandle<HashMap<FieldId, usize>>,
+) -> Html {
+    let onclick = calculate(fields, field_states, field_storage);
+
+    html! {
+        <button class={"btn btn-primary"} {onclick}>
+            { CALCULATE }
+        </button>
+    }
+}
+
 #[function_component]
 pub fn InputSection() -> Html {
     let field_states = use_map(HashMap::<FieldId, usize>::new());
@@ -169,6 +203,7 @@ pub fn InputSection() -> Html {
             { fieldset_item(POTENTIAL_LEGEND, potential_fieldset) }
             { fieldset_item(EQUIPMENT_LEGEND, item_fieldset) }
             { fieldset_item(PRICE_LEGEND, price_fieldset) }
+            { calculate_button(&fields, &field_states, &field_storage) }
         </div>
     }
 }
