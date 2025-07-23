@@ -7,8 +7,6 @@ edition = "2024"
 gloo-console = "0.3.0"
 serde = { version = "1.0.219", features = ["derive"] }
 serde_yaml = "0.9.34"
-strum = "0.27.1"
-strum_macros = "0.27.1"
 web-sys = "0.3.77"
 yew = { version = "0.21.0", features = ["csr"] }
 yew-hooks = "0.3.3"
