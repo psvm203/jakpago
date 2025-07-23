@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use web_sys::{HtmlInputElement, wasm_bindgen::JsCast};
-use yew::{Callback, Event, Html, MouseEvent, function_component, html};
+use yew::{Callback, Event, Html, KeyboardEvent, MouseEvent, function_component, html};
 use yew_hooks::{UseLocalStorageHandle, UseMapHandle, use_effect_once, use_local_storage, use_map};
 
 const FIELD_DATA: &str = include_str!("field.yaml");
@@ -10,6 +10,8 @@ const FIELD_STORAGE_KEY: &str = "field";
 const POTENTIAL_LEGEND: &str = "확률 정보";
 const EQUIPMENT_LEGEND: &str = "장비 정보";
 const PRICE_LEGEND: &str = "시세 정보";
+const CHARACTER_SEARCH_PLACEHOLDER: &str = "캐릭터 검색";
+const KEY_ENTER: &str = "Enter";
 const CALCULATE: &str = "계산";
 
 #[derive(Clone, Copy, Deserialize, Eq, Hash, PartialEq, Serialize)]
@@ -38,6 +40,53 @@ fn load_fields() -> Vec<Field> {
             gloo_console::error!(FIELD_DATA_ERROR_MESSAGE, err.to_string());
             vec![]
         }
+    }
+}
+
+fn search_character() -> Callback<KeyboardEvent> {
+    Callback::from(|event: KeyboardEvent| {
+        if event.key() == KEY_ENTER {
+            let target = event.target();
+            let input = target.and_then(|t| t.dyn_into::<HtmlInputElement>().ok());
+
+            if let Some(input) = input {
+                gloo_console::log!(input.value());
+            }
+        }
+    })
+}
+
+fn character_search_item() -> Html {
+    let onkeydown = search_character();
+
+    html! {
+        <label class={"input"}>
+            <svg
+                class={"h-[1em] opacity-50"}
+                xmlns={"http://www.w3.org/2000/svg"}
+                viewBox={"0 0 24 24"}
+            >
+                <g
+                    stroke-linejoin={"round"}
+                    stroke-linecap={"round"}
+                    stroke-width={"2.5"}
+                    fill={"none"}
+                    stroke={"currentColor"}
+                >
+                    <circle cx={"11"} cy={"11"} r={"8"} />
+                    <path d={"m21 21-4.3-4.3"} />
+                </g>
+            </svg>
+            <input
+                type={"search"}
+                class={"grow"}
+                placeholder={CHARACTER_SEARCH_PLACEHOLDER}
+                {onkeydown}
+            />
+            <kbd class="kbd kbd-sm">
+                { "↵" }
+            </kbd>
+        </label>
     }
 }
 
@@ -190,6 +239,13 @@ pub fn InputSection() -> Html {
                 }
             })
             .collect();
+
+    let potential_fieldset = html! {
+        <div>
+            { character_search_item() }
+            { potential_fieldset }
+        </div>
+    };
 
     let item_fieldset: Html = [FieldId::UpgradeableCount, FieldId::TraceRequired]
         .iter()
