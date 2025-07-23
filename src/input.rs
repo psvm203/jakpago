@@ -12,7 +12,7 @@ const EQUIPMENT_LEGEND: &str = "장비 정보";
 const PRICE_LEGEND: &str = "시세 정보";
 const CALCULATE: &str = "계산";
 
-#[derive(Copy, Clone, Hash, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Copy, Deserialize, Eq, Hash, PartialEq, Serialize)]
 enum FieldId {
     Diligence,
     EnhancementMastery,
