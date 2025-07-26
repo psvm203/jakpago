@@ -16,7 +16,7 @@ const CALCULATE: &str = "계산";
 
 #[derive(Clone, Copy, Deserialize, Eq, Hash, PartialEq, Serialize)]
 enum FieldId {
-    Diligence,
+    Handicraft,
     EnhancementMastery,
     UpgradeSalvation,
     UpgradeableCount,
@@ -144,7 +144,7 @@ fn field_item(field_states: &UseMapHandle<FieldId, usize>, field: &Field) -> Htm
 
 fn get_tooltip(field_id: &FieldId, value: usize) -> Option<String> {
     match field_id {
-        FieldId::Diligence => Some(format!("성공 확률 {}%p 증가", (value / 5 * 5) as f64 / 10.0)),
+        FieldId::Handicraft => Some(format!("성공 확률 {}%p 증가", (value / 5 * 5) as f64 / 10.0)),
         FieldId::EnhancementMastery => Some(format!("성공 확률 {value}%p 증가")),
         FieldId::UpgradeSalvation => Some(format!("실패 시 {value}% 확률로 횟수 차감 방지")),
         _ => None,
@@ -228,7 +228,7 @@ pub fn InputSection() -> Html {
         load_fields().into_iter().map(|field| (field.id, field)).collect();
 
     let potential_fieldset: Html =
-        [FieldId::Diligence, FieldId::EnhancementMastery, FieldId::UpgradeSalvation]
+        [FieldId::Handicraft, FieldId::EnhancementMastery, FieldId::UpgradeSalvation]
             .iter()
             .map(|id| {
                 html! {
