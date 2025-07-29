@@ -56,7 +56,8 @@ fn search_character(field_states: &UseMapHandle<FieldId, usize>) -> Callback<Key
                 let field_states = field_states.clone();
 
                 spawn_local(async move {
-                    let handicraft_level = crate::api::get_handicraft_level(input.value()).await;
+                    let handicraft_level =
+                        crate::api::get_handicraft_level_by_name(input.value()).await;
 
                     if let Some(handicraft_level) = handicraft_level {
                         field_states.insert(FieldId::Handicraft, handicraft_level);

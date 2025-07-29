@@ -65,13 +65,15 @@ async fn get_ocid(character_name: String) -> Option<String> {
         .map(|character| character.ocid)
 }
 
-pub async fn get_handicraft_level(character_name: String) -> Option<usize> {
+async fn get_handicraft_level(ocid: String) -> Option<usize> {
+    send_get_request::<CharacterPropensity>(GET_PROPENSITY_URL, vec![("ocid", ocid)])
+        .await
+        .map(|propensity| propensity.handicraft_level)
+}
+
+pub async fn get_handicraft_level_by_name(character_name: String) -> Option<usize> {
     match get_ocid(character_name).await {
-        Some(ocid) => {
-            send_get_request::<CharacterPropensity>(GET_PROPENSITY_URL, vec![("ocid", ocid)])
-                .await
-                .map(|propensity| propensity.handicraft_level)
-        }
+        Some(ocid) => get_handicraft_level(ocid).await,
         None => None,
     }
 }
