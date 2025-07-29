@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use wasm_bindgen_futures::spawn_local;
 use web_sys::{HtmlInputElement, wasm_bindgen::JsCast};
 use yew::{Callback, Event, Html, KeyboardEvent, MouseEvent, function_component, html};
 use yew_hooks::{UseLocalStorageHandle, UseMapHandle, use_effect_once, use_local_storage, use_map};
@@ -43,21 +44,31 @@ fn load_fields() -> Vec<Field> {
     }
 }
 
-fn search_character() -> Callback<KeyboardEvent> {
-    Callback::from(|event: KeyboardEvent| {
+fn search_character(field_states: &UseMapHandle<FieldId, usize>) -> Callback<KeyboardEvent> {
+    let field_states = field_states.clone();
+
+    Callback::from(move |event: KeyboardEvent| {
         if event.key() == KEY_ENTER {
             let target = event.target();
             let input = target.and_then(|t| t.dyn_into::<HtmlInputElement>().ok());
 
             if let Some(input) = input {
-                gloo_console::log!(input.value());
+                let field_states = field_states.clone();
+
+                spawn_local(async move {
+                    let handicraft_level = crate::api::get_handicraft_level(input.value()).await;
+
+                    if let Some(handicraft_level) = handicraft_level {
+                        field_states.insert(FieldId::Handicraft, handicraft_level);
+                    }
+                });
             }
         }
     })
 }
 
-fn character_search_item() -> Html {
-    let onkeydown = search_character();
+fn character_search_item(field_states: &UseMapHandle<FieldId, usize>) -> Html {
+    let onkeydown = search_character(field_states);
 
     html! {
         <label class={"input"}>
@@ -242,7 +253,7 @@ pub fn InputSection() -> Html {
 
     let potential_fieldset = html! {
         <div>
-            { character_search_item() }
+            { character_search_item(&field_states) }
             { potential_fieldset }
         </div>
     };
