@@ -5,9 +5,6 @@ const API_KEY: &str = include_str!("key.txt");
 const GET_OCID_URL: &str = "https://open.api.nexon.com/maplestory/v1/id";
 const GET_PROPENSITY_URL: &str = "https://open.api.nexon.com/maplestory/v1/character/propensity";
 const STATUS_SUCCESS: u16 = 200;
-const RESPONSE_ERROR_MESSAGE: &str = "API 응답 에러:";
-const DESERIALIZE_ERROR_MESSAGE: &str = "응답 파싱 에러:";
-const NETWORK_ERROR_MESSAGE: &str = "네트워크 에러:";
 
 #[derive(Deserialize)]
 struct Character {
@@ -26,10 +23,33 @@ struct CharacterPropensity {
     charm_level: usize,
 }
 
+#[derive(Deserialize)]
+struct Error {
+    name: String,
+    #[allow(dead_code)]
+    message: String,
+}
+
+pub enum ApiError {
+    InternalServerError,
+    Forbidden,
+    InvalidIdentifier,
+    InvalidParameter,
+    InvalidApiKey,
+    InvalidPath,
+    TooManyRequests,
+    DataPreparing,
+    GameUnderMaintenance,
+    ApiUnderMaintenance,
+    UnknownErrorResponse,
+    ParseError,
+    NetworkError,
+}
+
 async fn send_get_request<T: for<'de> Deserialize<'de>>(
     url: &'static str,
     params: Vec<(&'static str, String)>,
-) -> Option<T> {
+) -> Result<T, ApiError> {
     let request = Request::get(url)
         .query(params)
         .header("accept", "application/json")
@@ -40,40 +60,48 @@ async fn send_get_request<T: for<'de> Deserialize<'de>>(
             let status = response.status();
 
             if status != STATUS_SUCCESS {
-                gloo_console::error!(RESPONSE_ERROR_MESSAGE, status);
-                return None;
+                match response.json::<Error>().await {
+                    Ok(data) => match data.name.as_str() {
+                        "OPENAPI00001" => return Err(ApiError::InternalServerError),
+                        "OPENAPI00002" => return Err(ApiError::Forbidden),
+                        "OPENAPI00003" => return Err(ApiError::InvalidIdentifier),
+                        "OPENAPI00004" => return Err(ApiError::InvalidParameter),
+                        "OPENAPI00005" => return Err(ApiError::InvalidApiKey),
+                        "OPENAPI00006" => return Err(ApiError::InvalidPath),
+                        "OPENAPI00007" => return Err(ApiError::TooManyRequests),
+                        "OPENAPI00009" => return Err(ApiError::DataPreparing),
+                        "OPENAPI00010" => return Err(ApiError::GameUnderMaintenance),
+                        "OPENAPI00011" => return Err(ApiError::ApiUnderMaintenance),
+                        _ => return Err(ApiError::UnknownErrorResponse),
+                    },
+                    Err(_) => return Err(ApiError::UnknownErrorResponse),
+                }
             }
 
             match response.json::<T>().await {
-                Ok(data) => Some(data),
-                Err(err) => {
-                    gloo_console::error!(DESERIALIZE_ERROR_MESSAGE, err.to_string());
-                    None
-                }
+                Ok(data) => Ok(data),
+                Err(_) => Err(ApiError::ParseError),
             }
         }
-        Err(err) => {
-            gloo_console::error!(NETWORK_ERROR_MESSAGE, err.to_string());
-            None
-        }
+        Err(_) => Err(ApiError::NetworkError),
     }
 }
 
-async fn get_ocid(character_name: String) -> Option<String> {
+async fn get_ocid(character_name: String) -> Result<String, ApiError> {
     send_get_request::<Character>(GET_OCID_URL, vec![("character_name", character_name)])
         .await
         .map(|character| character.ocid)
 }
 
-async fn get_handicraft_level(ocid: String) -> Option<usize> {
+async fn get_handicraft_level(ocid: String) -> Result<usize, ApiError> {
     send_get_request::<CharacterPropensity>(GET_PROPENSITY_URL, vec![("ocid", ocid)])
         .await
         .map(|propensity| propensity.handicraft_level)
 }
 
-pub async fn get_handicraft_level_by_name(character_name: String) -> Option<usize> {
+pub async fn get_handicraft_level_by_name(character_name: String) -> Result<usize, ApiError> {
     match get_ocid(character_name).await {
-        Some(ocid) => get_handicraft_level(ocid).await,
-        None => None,
+        Ok(ocid) => get_handicraft_level(ocid).await,
+        Err(err) => Err(err),
     }
 }
