@@ -2,6 +2,7 @@
 name = "jakpago"
 version = "0.1.0"
 edition = "2024"
+authors = ["psvm203 <psvm203@proton.me>"]
 
 [dependencies]
 gloo-console = "0.3.0"
