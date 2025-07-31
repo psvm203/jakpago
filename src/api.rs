@@ -2,8 +2,9 @@ use gloo_net::http::Request;
 use serde::Deserialize;
 
 const API_KEY: &str = include_str!("key.txt");
-const GET_OCID_URL: &str = "https://open.api.nexon.com/maplestory/v1/id";
-const GET_PROPENSITY_URL: &str = "https://open.api.nexon.com/maplestory/v1/character/propensity";
+const ORIGIN: &str = "https://open.api.nexon.com";
+const GET_OCID_PATH: &str = "/maplestory/v1/id";
+const GET_PROPENSITY_PATH: &str = "/maplestory/v1/character/propensity";
 const STATUS_SUCCESS: u16 = 200;
 
 #[derive(Deserialize)]
@@ -47,10 +48,10 @@ pub enum ApiError {
 }
 
 async fn send_get_request<T: for<'de> Deserialize<'de>>(
-    url: &'static str,
+    url: String,
     params: Vec<(&'static str, String)>,
 ) -> Result<T, ApiError> {
-    let request = Request::get(url)
+    let request = Request::get(&url)
         .query(params)
         .header("accept", "application/json")
         .header("x-nxopen-api-key", API_KEY);
@@ -88,15 +89,21 @@ async fn send_get_request<T: for<'de> Deserialize<'de>>(
 }
 
 async fn get_ocid(character_name: String) -> Result<String, ApiError> {
-    send_get_request::<Character>(GET_OCID_URL, vec![("character_name", character_name)])
-        .await
-        .map(|character| character.ocid)
+    send_get_request::<Character>(
+        format!("{ORIGIN}{GET_OCID_PATH}"),
+        vec![("character_name", character_name)],
+    )
+    .await
+    .map(|character| character.ocid)
 }
 
 async fn get_handicraft_level(ocid: String) -> Result<usize, ApiError> {
-    send_get_request::<CharacterPropensity>(GET_PROPENSITY_URL, vec![("ocid", ocid)])
-        .await
-        .map(|propensity| propensity.handicraft_level)
+    send_get_request::<CharacterPropensity>(
+        format!("{ORIGIN}{GET_PROPENSITY_PATH}"),
+        vec![("ocid", ocid)],
+    )
+    .await
+    .map(|propensity| propensity.handicraft_level)
 }
 
 pub async fn get_handicraft_level_by_name(character_name: String) -> Result<usize, ApiError> {
