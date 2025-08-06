@@ -1,8 +1,7 @@
 use gloo_net::http::Request;
 use serde::Deserialize;
 
-const API_KEY: &str = include_str!("key.txt");
-const ORIGIN: &str = "https://open.api.nexon.com";
+const ORIGIN: &str = "https://nexon-open-api-proxy.psvm203.workers.dev";
 const GET_OCID_PATH: &str = "/maplestory/v1/id";
 const GET_PROPENSITY_PATH: &str = "/maplestory/v1/character/propensity";
 const STATUS_SUCCESS: u16 = 200;
@@ -51,10 +50,7 @@ async fn send_get_request<T: for<'de> Deserialize<'de>>(
     url: String,
     params: Vec<(&'static str, String)>,
 ) -> Result<T, ApiError> {
-    let request = Request::get(&url)
-        .query(params)
-        .header("accept", "application/json")
-        .header("x-nxopen-api-key", API_KEY);
+    let request = Request::get(&url).query(params);
 
     match request.send().await {
         Ok(response) => {
