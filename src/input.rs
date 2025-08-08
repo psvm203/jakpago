@@ -1,3 +1,4 @@
+use crate::api;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use wasm_bindgen_futures::spawn_local;
@@ -52,15 +53,18 @@ fn search_character(field_states: &UseMapHandle<FieldId, usize>) -> Callback<Key
             let target = event.target();
             let input = target.and_then(|t| t.dyn_into::<HtmlInputElement>().ok());
 
-            if let Some(input) = input {
+            if let Some(character_name) = input {
                 let field_states = field_states.clone();
 
                 spawn_local(async move {
-                    let handicraft_level =
-                        crate::api::get_handicraft_level_by_name(input.value()).await;
+                    let ocid = api::get_ocid(character_name.value()).await;
 
-                    if let Ok(handicraft_level) = handicraft_level {
-                        field_states.insert(FieldId::Handicraft, handicraft_level);
+                    if let Ok(ocid) = ocid {
+                        let handicraft_level = api::get_handicraft_level(ocid).await;
+
+                        if let Ok(handicraft_level) = handicraft_level {
+                            field_states.insert(FieldId::Handicraft, handicraft_level);
+                        }
                     }
                 });
             }

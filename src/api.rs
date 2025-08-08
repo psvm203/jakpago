@@ -84,7 +84,7 @@ async fn send_get_request<T: for<'de> Deserialize<'de>>(
     }
 }
 
-async fn get_ocid(character_name: String) -> Result<String, ApiError> {
+pub async fn get_ocid(character_name: String) -> Result<String, ApiError> {
     send_get_request::<Character>(
         format!("{ORIGIN}{GET_OCID_PATH}"),
         vec![("character_name", character_name)],
@@ -93,18 +93,11 @@ async fn get_ocid(character_name: String) -> Result<String, ApiError> {
     .map(|character| character.ocid)
 }
 
-async fn get_handicraft_level(ocid: String) -> Result<usize, ApiError> {
+pub async fn get_handicraft_level(ocid: String) -> Result<usize, ApiError> {
     send_get_request::<CharacterPropensity>(
         format!("{ORIGIN}{GET_PROPENSITY_PATH}"),
         vec![("ocid", ocid)],
     )
     .await
     .map(|propensity| propensity.handicraft_level)
-}
-
-pub async fn get_handicraft_level_by_name(character_name: String) -> Result<usize, ApiError> {
-    match get_ocid(character_name).await {
-        Ok(ocid) => get_handicraft_level(ocid).await,
-        Err(err) => Err(err),
-    }
 }
