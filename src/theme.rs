@@ -33,7 +33,7 @@ fn create_theme_change_callback(
     })
 }
 
-fn theme_item(theme_state: &UseLocalStorageHandle<String>, theme: &Theme) -> Html {
+fn render_theme_option(theme_state: &UseLocalStorageHandle<String>, theme: &Theme) -> Html {
     let current_theme = theme_state.as_deref().unwrap_or(THEME_DEFAULT_VALUE);
     let onchange = create_theme_change_callback(theme_state.clone(), theme.value);
 
@@ -68,8 +68,8 @@ pub fn ThemeController() -> Html {
         });
     }
 
-    let theme_items: Html =
-        load_themes().into_iter().map(|theme| theme_item(&theme_state, &theme)).collect();
+    let theme_options: Html =
+        load_themes().into_iter().map(|theme| render_theme_option(&theme_state, &theme)).collect();
 
     html! {
         <div class={"dropdown mb-72 absolute right-48"}>
@@ -89,7 +89,7 @@ pub fn ThemeController() -> Html {
                 tabindex={"0"}
                 class={"dropdown-content bg-base-300 rounded-box z-1 w-52 p-2 shadow-2xl"}
             >
-                { theme_items }
+                { theme_options }
             </ul>
         </div>
     }
