@@ -15,13 +15,12 @@ struct Theme {
 }
 
 fn load_themes() -> Vec<Theme> {
-    match serde_yaml::from_str(THEME_DATA) {
-        Ok(themes) => themes,
-        Err(err) => {
+    serde_yaml::from_str(THEME_DATA)
+        .map_err(|err| {
             gloo_console::error!(THEME_DATA_ERROR_MESSAGE, err.to_string());
-            vec![]
-        }
-    }
+            err
+        })
+        .unwrap_or_default()
 }
 
 fn create_theme_change_callback(
