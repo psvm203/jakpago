@@ -24,12 +24,10 @@ fn load_themes() -> Vec<Theme> {
     }
 }
 
-fn on_theme_change(
-    theme_state: &UseLocalStorageHandle<String>,
+fn create_theme_change_callback(
+    theme_state: UseLocalStorageHandle<String>,
     theme_value: &'static str,
 ) -> Callback<Event> {
-    let theme_state = theme_state.clone();
-
     Callback::from(move |_| {
         theme_state.set(theme_value.to_owned());
     })
@@ -37,7 +35,7 @@ fn on_theme_change(
 
 fn theme_item(theme_state: &UseLocalStorageHandle<String>, theme: &Theme) -> Html {
     let current_theme = theme_state.as_deref().unwrap_or(THEME_DEFAULT_VALUE);
-    let onchange = on_theme_change(theme_state, theme.value);
+    let onchange = create_theme_change_callback(theme_state.clone(), theme.value);
 
     html! {
         <li key={theme.value}>
