@@ -31,8 +31,8 @@ struct Field {
     id: FieldId,
     label: &'static str,
     placeholder: &'static str,
-    min: usize,
-    max: usize,
+    min: u32,
+    max: u32,
 }
 
 fn load_fields() -> Vec<Field> {
@@ -45,7 +45,7 @@ fn load_fields() -> Vec<Field> {
     }
 }
 
-fn search_character(field_states: &UseMapHandle<FieldId, usize>) -> Callback<KeyboardEvent> {
+fn search_character(field_states: &UseMapHandle<FieldId, u32>) -> Callback<KeyboardEvent> {
     let field_states = field_states.clone();
 
     Callback::from(move |event: KeyboardEvent| {
@@ -60,10 +60,31 @@ fn search_character(field_states: &UseMapHandle<FieldId, usize>) -> Callback<Key
                     let ocid = api::get_ocid(character_name.value()).await;
 
                     if let Ok(ocid) = ocid {
-                        let handicraft_level = api::get_handicraft_level(ocid).await;
+                        let handicraft_level = api::get_handicraft_level(ocid.clone()).await;
 
                         if let Ok(handicraft_level) = handicraft_level {
                             field_states.insert(FieldId::Handicraft, handicraft_level);
+                        }
+
+                        let guild_id = api::get_guild_id_from_ocid(ocid).await;
+
+                        if let Ok(guild_id) = guild_id {
+                            gloo_console::log!(guild_id.clone());
+                            let enhance_mastery_level =
+                                api::get_enhance_mastery_level(guild_id.clone()).await;
+
+                            if let Ok(enhance_mastery_level) = enhance_mastery_level {
+                                field_states
+                                    .insert(FieldId::EnhancementMastery, enhance_mastery_level);
+                            }
+
+                            let uprade_salvation_level =
+                                api::get_upgrade_salvation_level(guild_id).await;
+
+                            if let Ok(uprade_salvation_level) = uprade_salvation_level {
+                                field_states
+                                    .insert(FieldId::UpgradeSalvation, uprade_salvation_level);
+                            }
                         }
                     }
                 });
@@ -72,7 +93,7 @@ fn search_character(field_states: &UseMapHandle<FieldId, usize>) -> Callback<Key
     })
 }
 
-fn character_search_item(field_states: &UseMapHandle<FieldId, usize>) -> Html {
+fn character_search_item(field_states: &UseMapHandle<FieldId, u32>) -> Html {
     let onkeydown = search_character(field_states);
 
     html! {
@@ -106,7 +127,7 @@ fn character_search_item(field_states: &UseMapHandle<FieldId, usize>) -> Html {
     }
 }
 
-fn on_field_change(field_states: &UseMapHandle<FieldId, usize>, field: &Field) -> Callback<Event> {
+fn on_field_change(field_states: &UseMapHandle<FieldId, u32>, field: &Field) -> Callback<Event> {
     let states = field_states.clone();
     let min = field.min;
     let max = field.max;
@@ -117,7 +138,7 @@ fn on_field_change(field_states: &UseMapHandle<FieldId, usize>, field: &Field) -
         let input = target.and_then(|t| t.dyn_into::<HtmlInputElement>().ok());
 
         if let Some(input) = input
-            && let Ok(value) = input.value().parse::<usize>()
+            && let Ok(value) = input.value().parse::<u32>()
         {
             if value < min {
                 return;
@@ -132,8 +153,8 @@ fn on_field_change(field_states: &UseMapHandle<FieldId, usize>, field: &Field) -
     })
 }
 
-fn field_item(field_states: &UseMapHandle<FieldId, usize>, field: &Field) -> Html {
-    let value = field_states.current().get(&field.id).map(usize::to_string);
+fn field_item(field_states: &UseMapHandle<FieldId, u32>, field: &Field) -> Html {
+    let value = field_states.current().get(&field.id).map(u32::to_string);
     let min = field.min.to_string();
     let max = field.max.to_string();
     let onchange = on_field_change(field_states, field);
@@ -158,7 +179,7 @@ fn field_item(field_states: &UseMapHandle<FieldId, usize>, field: &Field) -> Htm
     }
 }
 
-fn get_tooltip(field_id: &FieldId, value: usize) -> Option<String> {
+fn get_tooltip(field_id: &FieldId, value: u32) -> Option<String> {
     match field_id {
         FieldId::Handicraft => Some(format!("성공 확률 {}%p 증가", (value / 5 * 5) as f64 / 10.0)),
         FieldId::EnhancementMastery => Some(format!("성공 확률 {value}%p 증가")),
@@ -167,7 +188,7 @@ fn get_tooltip(field_id: &FieldId, value: usize) -> Option<String> {
     }
 }
 
-fn tooltip_item(field_states: &UseMapHandle<FieldId, usize>, field_id: &FieldId) -> Html {
+fn tooltip_item(field_states: &UseMapHandle<FieldId, u32>, field_id: &FieldId) -> Html {
     let value = *field_states.current().get(field_id).unwrap_or(&0);
     let tooltip = get_tooltip(field_id, value);
 
@@ -191,12 +212,12 @@ fn fieldset_item(legend: &'static str, contents: Html) -> Html {
 
 fn calculate(
     fields: &HashMap<FieldId, Field>,
-    field_states: &UseMapHandle<FieldId, usize>,
-    field_storage: &UseLocalStorageHandle<HashMap<FieldId, usize>>,
+    field_states: &UseMapHandle<FieldId, u32>,
+    field_storage: &UseLocalStorageHandle<HashMap<FieldId, u32>>,
 ) -> Callback<MouseEvent> {
     let storage = field_storage.clone();
 
-    let map: HashMap<FieldId, usize> = field_states
+    let map: HashMap<FieldId, u32> = field_states
         .current()
         .iter()
         .filter(|&(id, &value)| fields[id].min <= value && value <= fields[id].max)
@@ -210,8 +231,8 @@ fn calculate(
 
 fn calculate_button(
     fields: &HashMap<FieldId, Field>,
-    field_states: &UseMapHandle<FieldId, usize>,
-    field_storage: &UseLocalStorageHandle<HashMap<FieldId, usize>>,
+    field_states: &UseMapHandle<FieldId, u32>,
+    field_storage: &UseLocalStorageHandle<HashMap<FieldId, u32>>,
 ) -> Html {
     let onclick = calculate(fields, field_states, field_storage);
 
@@ -224,8 +245,8 @@ fn calculate_button(
 
 #[function_component]
 pub fn InputSection() -> Html {
-    let field_states = use_map(HashMap::<FieldId, usize>::new());
-    let field_storage = use_local_storage::<HashMap<FieldId, usize>>(FIELD_STORAGE_KEY.to_owned());
+    let field_states = use_map(HashMap::<FieldId, u32>::new());
+    let field_storage = use_local_storage::<HashMap<FieldId, u32>>(FIELD_STORAGE_KEY.to_owned());
 
     {
         let field_storage = field_storage.clone();

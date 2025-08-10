@@ -4,6 +4,9 @@ use serde::Deserialize;
 const ORIGIN: &str = "https://nexon-open-api-proxy.psvm203.workers.dev";
 const GET_OCID_PATH: &str = "/maplestory/v1/id";
 const GET_PROPENSITY_PATH: &str = "/maplestory/v1/character/propensity";
+const GET_BASIC_INFORMATION_PATH: &str = "/maplestory/v1/character/basic";
+const GET_GUILD_ID_PATH: &str = "/maplestory/v1/guild/id";
+const GET_GUILD_BASIC_INFORMATION_PATH: &str = "/maplestory/v1/guild/basic";
 const STATUS_SUCCESS: u16 = 200;
 
 #[derive(Deserialize)]
@@ -15,12 +18,63 @@ struct Character {
 #[derive(Deserialize)]
 struct CharacterPropensity {
     date: Option<String>,
-    charisma_level: usize,
-    sensibility_level: usize,
-    insight_level: usize,
-    willingness_level: usize,
-    handicraft_level: usize,
-    charm_level: usize,
+    charisma_level: u32,
+    sensibility_level: u32,
+    insight_level: u32,
+    willingness_level: u32,
+    handicraft_level: u32,
+    charm_level: u32,
+}
+
+#[allow(dead_code)]
+#[derive(Deserialize)]
+struct CharacterBasic {
+    date: Option<String>,
+    character_name: String,
+    world_name: String,
+    character_gender: String,
+    character_class: String,
+    character_class_level: String,
+    character_level: u32,
+    character_exp: u64,
+    character_exp_rate: String,
+    character_guild_name: String,
+    character_image: String,
+    character_date_create: String,
+    access_flag: String,
+    liberation_quest_clear_flag: String,
+    liberation_quest_clear: String,
+}
+
+#[derive(Deserialize)]
+struct Guild {
+    oguild_id: String,
+}
+
+#[allow(dead_code)]
+#[derive(Deserialize)]
+struct GuildSkill {
+    skill_name: String,
+    skill_description: String,
+    skill_level: u32,
+    skill_effect: String,
+    skill_icon: String,
+}
+
+#[allow(dead_code)]
+#[derive(Deserialize)]
+struct GuildBasicInformation {
+    date: Option<String>,
+    world_name: String,
+    guild_name: String,
+    guild_level: u32,
+    guild_fame: u32,
+    guild_point: u32,
+    guild_master_name: String,
+    guild_member_count: u32,
+    guild_member: Vec<String>,
+    guild_skill: Vec<GuildSkill>,
+    guild_noblesse_skill: Vec<GuildSkill>,
 }
 
 #[derive(Deserialize)]
@@ -93,11 +147,75 @@ pub async fn get_ocid(character_name: String) -> Result<String, ApiError> {
     .map(|character| character.ocid)
 }
 
-pub async fn get_handicraft_level(ocid: String) -> Result<usize, ApiError> {
+pub async fn get_handicraft_level(ocid: String) -> Result<u32, ApiError> {
     send_get_request::<CharacterPropensity>(
         format!("{ORIGIN}{GET_PROPENSITY_PATH}"),
         vec![("ocid", ocid)],
     )
     .await
     .map(|propensity| propensity.handicraft_level)
+}
+
+async fn get_basic_information(ocid: String) -> Result<CharacterBasic, ApiError> {
+    send_get_request::<CharacterBasic>(
+        format!("{ORIGIN}{GET_BASIC_INFORMATION_PATH}"),
+        vec![("ocid", ocid)],
+    )
+    .await
+}
+
+async fn get_guild_id(guild_name: String, world_name: String) -> Result<String, ApiError> {
+    send_get_request::<Guild>(
+        format!("{ORIGIN}{GET_GUILD_ID_PATH}"),
+        vec![("guild_name", guild_name), ("world_name", world_name)],
+    )
+    .await
+    .map(|guild| guild.oguild_id)
+}
+
+pub async fn get_guild_id_from_ocid(ocid: String) -> Result<String, ApiError> {
+    let guild_name =
+        get_basic_information(ocid.clone()).await.map(|basic| basic.character_guild_name);
+
+    let world_name = get_basic_information(ocid).await.map(|basic| basic.world_name);
+
+    if let Ok(guild_name) = guild_name
+        && let Ok(world_name) = world_name
+    {
+        get_guild_id(guild_name, world_name).await
+    } else {
+        Err(ApiError::InternalServerError)
+    }
+}
+
+async fn get_guild_basic_information(guild_id: String) -> Result<GuildBasicInformation, ApiError> {
+    send_get_request::<GuildBasicInformation>(
+        format!("{ORIGIN}{GET_GUILD_BASIC_INFORMATION_PATH}"),
+        vec![("oguild_id", guild_id)],
+    )
+    .await
+}
+
+pub async fn get_enhance_mastery_level(guild_id: String) -> Result<u32, ApiError> {
+    let skills = get_guild_basic_information(guild_id).await?.guild_skill;
+
+    let level = skills
+        .iter()
+        .find(|skill| skill.skill_name == "강화의 달인")
+        .map(|skill| skill.skill_level)
+        .unwrap_or(0);
+
+    Ok(level)
+}
+
+pub async fn get_upgrade_salvation_level(guild_id: String) -> Result<u32, ApiError> {
+    let skills = get_guild_basic_information(guild_id).await?.guild_skill;
+
+    let level = skills
+        .iter()
+        .find(|skill| skill.skill_name == "실패를 두려워 않는")
+        .map(|skill| skill.skill_level)
+        .unwrap_or(0);
+
+    Ok(level)
 }
