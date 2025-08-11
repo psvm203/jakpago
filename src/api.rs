@@ -138,7 +138,7 @@ async fn send_get_request<T: for<'de> Deserialize<'de>>(
     }
 }
 
-pub async fn get_ocid(character_name: String) -> Result<String, ApiError> {
+async fn get_ocid(character_name: String) -> Result<String, ApiError> {
     send_get_request::<Character>(
         format!("{ORIGIN}{GET_OCID_PATH}"),
         vec![("character_name", character_name)],
@@ -147,13 +147,20 @@ pub async fn get_ocid(character_name: String) -> Result<String, ApiError> {
     .map(|character| character.ocid)
 }
 
-pub async fn get_handicraft_level(ocid: String) -> Result<u32, ApiError> {
+async fn get_handicraft_level(ocid: String) -> Result<u32, ApiError> {
     send_get_request::<CharacterPropensity>(
         format!("{ORIGIN}{GET_PROPENSITY_PATH}"),
         vec![("ocid", ocid)],
     )
     .await
     .map(|propensity| propensity.handicraft_level)
+}
+
+pub async fn get_handicraft_level_by_character_name(
+    character_name: String,
+) -> Result<u32, ApiError> {
+    let ocid = get_ocid(character_name).await?;
+    get_handicraft_level(ocid).await
 }
 
 async fn get_basic_information(ocid: String) -> Result<CharacterBasic, ApiError> {
@@ -173,21 +180,6 @@ async fn get_guild_id(guild_name: String, world_name: String) -> Result<String, 
     .map(|guild| guild.oguild_id)
 }
 
-pub async fn get_guild_id_from_ocid(ocid: String) -> Result<String, ApiError> {
-    let guild_name =
-        get_basic_information(ocid.clone()).await.map(|basic| basic.character_guild_name);
-
-    let world_name = get_basic_information(ocid).await.map(|basic| basic.world_name);
-
-    if let Ok(guild_name) = guild_name
-        && let Ok(world_name) = world_name
-    {
-        get_guild_id(guild_name, world_name).await
-    } else {
-        Err(ApiError::InternalServerError)
-    }
-}
-
 async fn get_guild_basic_information(guild_id: String) -> Result<GuildBasicInformation, ApiError> {
     send_get_request::<GuildBasicInformation>(
         format!("{ORIGIN}{GET_GUILD_BASIC_INFORMATION_PATH}"),
@@ -196,24 +188,19 @@ async fn get_guild_basic_information(guild_id: String) -> Result<GuildBasicInfor
     .await
 }
 
-pub async fn get_enhance_mastery_level(guild_id: String) -> Result<u32, ApiError> {
+pub async fn get_guild_skill_level_by_character_name(
+    character_name: String,
+    skill_name: &'static str,
+) -> Result<u32, ApiError> {
+    let ocid = get_ocid(character_name).await?;
+    let guild_name = get_basic_information(ocid.clone()).await?.character_guild_name;
+    let world_name = get_basic_information(ocid).await?.world_name;
+    let guild_id = get_guild_id(guild_name, world_name).await?;
     let skills = get_guild_basic_information(guild_id).await?.guild_skill;
 
     let level = skills
         .iter()
-        .find(|skill| skill.skill_name == "강화의 달인")
-        .map(|skill| skill.skill_level)
-        .unwrap_or(0);
-
-    Ok(level)
-}
-
-pub async fn get_upgrade_salvation_level(guild_id: String) -> Result<u32, ApiError> {
-    let skills = get_guild_basic_information(guild_id).await?.guild_skill;
-
-    let level = skills
-        .iter()
-        .find(|skill| skill.skill_name == "실패를 두려워 않는")
+        .find(|skill| skill.skill_name == skill_name)
         .map(|skill| skill.skill_level)
         .unwrap_or(0);
 

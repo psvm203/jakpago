@@ -57,35 +57,31 @@ fn search_character(field_states: &UseMapHandle<FieldId, u32>) -> Callback<Keybo
                 let field_states = field_states.clone();
 
                 spawn_local(async move {
-                    let ocid = api::get_ocid(character_name.value()).await;
+                    let handicraft_level =
+                        api::get_handicraft_level_by_character_name(character_name.value()).await;
 
-                    if let Ok(ocid) = ocid {
-                        let handicraft_level = api::get_handicraft_level(ocid.clone()).await;
+                    if let Ok(handicraft_level) = handicraft_level {
+                        field_states.insert(FieldId::Handicraft, handicraft_level);
+                    }
 
-                        if let Ok(handicraft_level) = handicraft_level {
-                            field_states.insert(FieldId::Handicraft, handicraft_level);
-                        }
+                    let enhance_mastery_level = api::get_guild_skill_level_by_character_name(
+                        character_name.value(),
+                        "강화의 달인",
+                    )
+                    .await;
 
-                        let guild_id = api::get_guild_id_from_ocid(ocid).await;
+                    if let Ok(enhance_mastery_level) = enhance_mastery_level {
+                        field_states.insert(FieldId::EnhancementMastery, enhance_mastery_level);
+                    }
 
-                        if let Ok(guild_id) = guild_id {
-                            gloo_console::log!(guild_id.clone());
-                            let enhance_mastery_level =
-                                api::get_enhance_mastery_level(guild_id.clone()).await;
+                    let upgrade_salvation_level = api::get_guild_skill_level_by_character_name(
+                        character_name.value(),
+                        "실패를 두려워 않는",
+                    )
+                    .await;
 
-                            if let Ok(enhance_mastery_level) = enhance_mastery_level {
-                                field_states
-                                    .insert(FieldId::EnhancementMastery, enhance_mastery_level);
-                            }
-
-                            let uprade_salvation_level =
-                                api::get_upgrade_salvation_level(guild_id).await;
-
-                            if let Ok(uprade_salvation_level) = uprade_salvation_level {
-                                field_states
-                                    .insert(FieldId::UpgradeSalvation, uprade_salvation_level);
-                            }
-                        }
+                    if let Ok(upgrade_salvation_level) = upgrade_salvation_level {
+                        field_states.insert(FieldId::UpgradeSalvation, upgrade_salvation_level);
                     }
                 });
             }
