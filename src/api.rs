@@ -1,4 +1,4 @@
-use gloo_net::http::Request;
+use gloo_net::http::{Request, Response};
 use serde::Deserialize;
 
 const ORIGIN: &str = "https://nexon-open-api-proxy.psvm203.workers.dev";
@@ -100,42 +100,43 @@ pub enum ApiError {
     NetworkError,
 }
 
+fn map_error_code(error_code: &str) -> ApiError {
+    use ApiError::*;
+
+    match error_code {
+        "OPENAPI00001" => InternalServerError,
+        "OPENAPI00002" => Forbidden,
+        "OPENAPI00003" => InvalidIdentifier,
+        "OPENAPI00004" => InvalidParameter,
+        "OPENAPI00005" => InvalidApiKey,
+        "OPENAPI00006" => InvalidPath,
+        "OPENAPI00007" => TooManyRequests,
+        "OPENAPI00009" => DataNotReady,
+        "OPENAPI00010" => GameUnderMaintenance,
+        "OPENAPI00011" => ApiUnderMaintenance,
+        _ => UnknownErrorResponse,
+    }
+}
+
+async fn parse_error_response<T>(response: Response) -> Result<T, ApiError> {
+    match response.json::<Error>().await {
+        Ok(error) => Err(map_error_code(&error.name)),
+        Err(_) => Err(ApiError::UnknownErrorResponse),
+    }
+}
+
 async fn send_get_request<T: for<'de> Deserialize<'de>>(
     url: String,
     params: Vec<(&'static str, String)>,
 ) -> Result<T, ApiError> {
-    let request = Request::get(&url).query(params);
+    let response =
+        Request::get(&url).query(params).send().await.map_err(|_| ApiError::NetworkError)?;
 
-    match request.send().await {
-        Ok(response) => {
-            let status = response.status();
-
-            if status != STATUS_SUCCESS {
-                match response.json::<Error>().await {
-                    Ok(data) => match data.name.as_str() {
-                        "OPENAPI00001" => return Err(ApiError::InternalServerError),
-                        "OPENAPI00002" => return Err(ApiError::Forbidden),
-                        "OPENAPI00003" => return Err(ApiError::InvalidIdentifier),
-                        "OPENAPI00004" => return Err(ApiError::InvalidParameter),
-                        "OPENAPI00005" => return Err(ApiError::InvalidApiKey),
-                        "OPENAPI00006" => return Err(ApiError::InvalidPath),
-                        "OPENAPI00007" => return Err(ApiError::TooManyRequests),
-                        "OPENAPI00009" => return Err(ApiError::DataNotReady),
-                        "OPENAPI00010" => return Err(ApiError::GameUnderMaintenance),
-                        "OPENAPI00011" => return Err(ApiError::ApiUnderMaintenance),
-                        _ => return Err(ApiError::UnknownErrorResponse),
-                    },
-                    Err(_) => return Err(ApiError::UnknownErrorResponse),
-                }
-            }
-
-            match response.json::<T>().await {
-                Ok(data) => Ok(data),
-                Err(_) => Err(ApiError::ParseError),
-            }
-        }
-        Err(_) => Err(ApiError::NetworkError),
+    if response.status() != STATUS_SUCCESS {
+        return parse_error_response(response).await;
     }
+
+    response.json::<T>().await.map_err(|_| ApiError::ParseError)
 }
 
 async fn get_ocid(character_name: String) -> Result<String, ApiError> {
