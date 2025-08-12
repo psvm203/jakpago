@@ -15,6 +15,8 @@ const PRICE_LEGEND: &str = "시세 정보";
 const CHARACTER_SEARCH_PLACEHOLDER: &str = "캐릭터 검색";
 const KEY_ENTER: &str = "Enter";
 const CALCULATE: &str = "계산";
+const SKILL_NAME_ENHANCE_MASTERY: &str = "강화의 달인";
+const SKILL_NAME_UPGRADE_SALVATION: &str = "실패를 두려워 않는";
 
 #[derive(Clone, Copy, Deserialize, Eq, Hash, PartialEq, Serialize)]
 enum FieldId {
@@ -66,7 +68,7 @@ fn search_character(field_states: &UseMapHandle<FieldId, u32>) -> Callback<Keybo
 
                     let enhance_mastery_level = api::get_guild_skill_level_by_character_name(
                         character_name.value(),
-                        "강화의 달인",
+                        SKILL_NAME_ENHANCE_MASTERY,
                     )
                     .await;
 
@@ -76,7 +78,7 @@ fn search_character(field_states: &UseMapHandle<FieldId, u32>) -> Callback<Keybo
 
                     let upgrade_salvation_level = api::get_guild_skill_level_by_character_name(
                         character_name.value(),
-                        "실패를 두려워 않는",
+                        SKILL_NAME_UPGRADE_SALVATION,
                     )
                     .await;
 
