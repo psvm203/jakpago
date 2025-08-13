@@ -8,6 +8,9 @@ const GET_BASIC_INFORMATION_PATH: &str = "/maplestory/v1/character/basic";
 const GET_GUILD_ID_PATH: &str = "/maplestory/v1/guild/id";
 const GET_GUILD_BASIC_INFORMATION_PATH: &str = "/maplestory/v1/guild/basic";
 const STATUS_SUCCESS: u16 = 200;
+const UNKNOWN_RESPONSE_ERROR_MESSAGE: &str = "알 수 없는 응답 오류:";
+const NETWORK_ERROR_MESSAGE: &str = "네트워크 오류:";
+const PARSE_ERROR_MESSAGE: &str = "응답 파싱 오류:";
 
 #[derive(Deserialize)]
 struct Character {
@@ -122,7 +125,7 @@ async fn parse_error_response<T>(response: Response) -> Result<T, ApiError> {
     match response.json::<Error>().await {
         Ok(error) => Err(map_error_code(&error.name)),
         Err(error) => {
-            gloo_console::error!(error.to_string());
+            gloo_console::error!(UNKNOWN_RESPONSE_ERROR_MESSAGE, error.to_string());
             Err(ApiError::UnknownErrorResponse)
         }
     }
@@ -133,7 +136,7 @@ async fn send_get_request<T: for<'de> Deserialize<'de>>(
     params: Vec<(&'static str, String)>,
 ) -> Result<T, ApiError> {
     let response = Request::get(&url).query(params).send().await.map_err(|error| {
-        gloo_console::error!(error.to_string());
+        gloo_console::error!(NETWORK_ERROR_MESSAGE, error.to_string());
         ApiError::NetworkError
     })?;
 
@@ -142,7 +145,7 @@ async fn send_get_request<T: for<'de> Deserialize<'de>>(
     }
 
     response.json::<T>().await.map_err(|error| {
-        gloo_console::error!(error.to_string());
+        gloo_console::error!(PARSE_ERROR_MESSAGE, error.to_string());
         ApiError::ParseError
     })
 }
