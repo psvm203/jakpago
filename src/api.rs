@@ -38,7 +38,7 @@ struct CharacterBasic {
     character_level: u32,
     character_exp: u64,
     character_exp_rate: String,
-    character_guild_name: String,
+    character_guild_name: Option<String>,
     character_image: String,
     character_date_create: String,
     access_flag: String,
@@ -202,8 +202,14 @@ pub async fn get_guild_skill_level_by_character_name(
     skill_name: &'static str,
 ) -> Result<u32, ApiError> {
     let ocid = get_ocid(character_name).await?;
-    let guild_name = get_basic_information(ocid.clone()).await?.character_guild_name;
-    let world_name = get_basic_information(ocid).await?.world_name;
+    let basic_info = get_basic_information(ocid).await?;
+
+    let guild_name = match basic_info.character_guild_name {
+        Some(guild_name) => guild_name,
+        None => return Ok(0),
+    };
+
+    let world_name = basic_info.world_name;
     let guild_id = get_guild_id(guild_name, world_name).await?;
     let skills = get_guild_basic_information(guild_id).await?.guild_skill;
 
