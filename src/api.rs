@@ -121,7 +121,10 @@ fn map_error_code(error_code: &str) -> ApiError {
 async fn parse_error_response<T>(response: Response) -> Result<T, ApiError> {
     match response.json::<Error>().await {
         Ok(error) => Err(map_error_code(&error.name)),
-        Err(_) => Err(ApiError::UnknownErrorResponse),
+        Err(error) => {
+            gloo_console::error!(error.to_string());
+            Err(ApiError::UnknownErrorResponse)
+        }
     }
 }
 
@@ -129,14 +132,19 @@ async fn send_get_request<T: for<'de> Deserialize<'de>>(
     url: String,
     params: Vec<(&'static str, String)>,
 ) -> Result<T, ApiError> {
-    let response =
-        Request::get(&url).query(params).send().await.map_err(|_| ApiError::NetworkError)?;
+    let response = Request::get(&url).query(params).send().await.map_err(|error| {
+        gloo_console::error!(error.to_string());
+        ApiError::NetworkError
+    })?;
 
     if response.status() != STATUS_SUCCESS {
         return parse_error_response(response).await;
     }
 
-    response.json::<T>().await.map_err(|_| ApiError::ParseError)
+    response.json::<T>().await.map_err(|error| {
+        gloo_console::error!(error.to_string());
+        ApiError::ParseError
+    })
 }
 
 async fn get_ocid(character_name: String) -> Result<String, ApiError> {
