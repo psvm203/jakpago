@@ -719,6 +719,7 @@ dependencies = [
  "gloo-console 0.3.0",
  "gloo-net 0.6.0",
  "serde",
+ "serde_urlencoded",
  "serde_yaml",
  "wasm-bindgen-futures",
  "web-sys",
