@@ -302,8 +302,7 @@ pub async fn get_guild_skill_level_by_character_name(
     let level = skills
         .iter()
         .find(|skill| skill.skill_name == skill_name)
-        .map(|skill| skill.skill_level)
-        .unwrap_or(0);
+        .map_or(0, |skill| skill.skill_level);
 
     Ok(level)
 }
