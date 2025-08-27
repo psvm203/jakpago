@@ -210,11 +210,8 @@ pub enum BadResponse {
     NetworkError,
 }
 
-#[derive(Debug)]
-pub struct BadResponseParseError;
-
 impl FromStr for BadResponse {
-    type Err = BadResponseParseError;
+    type Err = std::convert::Infallible;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
