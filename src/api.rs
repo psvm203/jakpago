@@ -290,9 +290,8 @@ pub async fn get_guild_skill_level_by_character_name(
     let ocid = get_ocid(character_name).await?;
     let basic_info = get_basic_information(ocid).await?;
 
-    let guild_name = match basic_info.character_guild_name {
-        Some(guild_name) => guild_name,
-        None => return Ok(0),
+    let Some(guild_name) = basic_info.character_guild_name else {
+        return Ok(0);
     };
 
     let world_name = basic_info.world_name;
