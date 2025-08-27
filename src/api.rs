@@ -23,7 +23,7 @@ trait ApiRequest {
             Ok(error) => Err(BadResponse::from_str(&error.name).unwrap()),
             Err(error) => {
                 gloo_console::error!(UNKNOWN_RESPONSE_ERROR_MESSAGE, error.to_string());
-                Err(BadResponse::UnknownBadResponse)
+                Err(BadResponse::UnknownResponse)
             }
         }
     }
@@ -205,7 +205,7 @@ pub enum BadResponse {
     DataNotReady,
     GameUnderMaintenance,
     ApiUnderMaintenance,
-    UnknownBadResponse,
+    UnknownResponse,
     ParseError,
     NetworkError,
 }
@@ -225,7 +225,7 @@ impl FromStr for BadResponse {
             "OPENAPI00009" => Ok(Self::DataNotReady),
             "OPENAPI00010" => Ok(Self::GameUnderMaintenance),
             "OPENAPI00011" => Ok(Self::ApiUnderMaintenance),
-            _ => Ok(Self::UnknownBadResponse),
+            _ => Ok(Self::UnknownResponse),
         }
     }
 }
