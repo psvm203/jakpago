@@ -1,5 +1,6 @@
 use gloo_net::http;
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
+use std::str::FromStr;
 
 const ORIGIN: &str = "https://nexon-open-api-proxy.psvm203.workers.dev";
 const GET_OCID_PATH: &str = "/maplestory/v1/id";
@@ -17,35 +18,17 @@ trait ApiRequest {
 
     fn endpoint_path() -> &'static str;
 
-    fn map_error_code(error_code: &str) -> ApiError {
-        use ApiError::*;
-
-        match error_code {
-            "OPENAPI00001" => InternalServerError,
-            "OPENAPI00002" => Forbidden,
-            "OPENAPI00003" => InvalidIdentifier,
-            "OPENAPI00004" => InvalidParameter,
-            "OPENAPI00005" => InvalidApiKey,
-            "OPENAPI00006" => InvalidPath,
-            "OPENAPI00007" => TooManyRequests,
-            "OPENAPI00009" => DataNotReady,
-            "OPENAPI00010" => GameUnderMaintenance,
-            "OPENAPI00011" => ApiUnderMaintenance,
-            _ => UnknownErrorResponse,
-        }
-    }
-
-    async fn parse_error_response<T>(response: http::Response) -> Result<T, ApiError> {
+    async fn parse_error_response<T>(response: http::Response) -> Result<T, BadResponse> {
         match response.json::<Error>().await {
-            Ok(error) => Err(Self::map_error_code(&error.name)),
+            Ok(error) => Err(BadResponse::from_str(&error.name).unwrap()),
             Err(error) => {
                 gloo_console::error!(UNKNOWN_RESPONSE_ERROR_MESSAGE, error.to_string());
-                Err(ApiError::UnknownErrorResponse)
+                Err(BadResponse::UnknownBadResponse)
             }
         }
     }
 
-    async fn get_api_data(&self) -> Result<Self::Response, ApiError>
+    async fn get_api_data(&self) -> Result<Self::Response, BadResponse>
     where
         Self: Serialize,
         Self::Response: DeserializeOwned,
@@ -56,7 +39,7 @@ trait ApiRequest {
 
         let response = http::Request::get(&url).send().await.map_err(|error| {
             gloo_console::error!(NETWORK_ERROR_MESSAGE, error.to_string());
-            ApiError::NetworkError
+            BadResponse::NetworkError
         })?;
 
         if response.status() != STATUS_SUCCESS {
@@ -65,7 +48,7 @@ trait ApiRequest {
 
         response.json::<Self::Response>().await.map_err(|error| {
             gloo_console::error!(PARSE_ERROR_MESSAGE, error.to_string());
-            ApiError::ParseError
+            BadResponse::ParseError
         })
     }
 }
@@ -211,7 +194,7 @@ struct Error {
     message: String,
 }
 
-pub enum ApiError {
+pub enum BadResponse {
     InternalServerError,
     Forbidden,
     InvalidIdentifier,
@@ -222,12 +205,35 @@ pub enum ApiError {
     DataNotReady,
     GameUnderMaintenance,
     ApiUnderMaintenance,
-    UnknownErrorResponse,
+    UnknownBadResponse,
     ParseError,
     NetworkError,
 }
 
-async fn get_ocid(character_name: String) -> Result<String, ApiError> {
+#[derive(Debug)]
+pub struct BadResponseParseError;
+
+impl FromStr for BadResponse {
+    type Err = BadResponseParseError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "OPENAPI00001" => Ok(Self::InternalServerError),
+            "OPENAPI00002" => Ok(Self::Forbidden),
+            "OPENAPI00003" => Ok(Self::InvalidIdentifier),
+            "OPENAPI00004" => Ok(Self::InvalidParameter),
+            "OPENAPI00005" => Ok(Self::InvalidApiKey),
+            "OPENAPI00006" => Ok(Self::InvalidPath),
+            "OPENAPI00007" => Ok(Self::TooManyRequests),
+            "OPENAPI00009" => Ok(Self::DataNotReady),
+            "OPENAPI00010" => Ok(Self::GameUnderMaintenance),
+            "OPENAPI00011" => Ok(Self::ApiUnderMaintenance),
+            _ => Ok(Self::UnknownBadResponse),
+        }
+    }
+}
+
+async fn get_ocid(character_name: String) -> Result<String, BadResponse> {
     CharacterRequest {
         character_name,
     }
@@ -236,7 +242,7 @@ async fn get_ocid(character_name: String) -> Result<String, ApiError> {
     .map(|character| character.ocid)
 }
 
-async fn get_handicraft_level(ocid: String) -> Result<u32, ApiError> {
+async fn get_handicraft_level(ocid: String) -> Result<u32, BadResponse> {
     CharacterPropensityRequest {
         ocid,
     }
@@ -247,12 +253,12 @@ async fn get_handicraft_level(ocid: String) -> Result<u32, ApiError> {
 
 pub async fn get_handicraft_level_by_character_name(
     character_name: String,
-) -> Result<u32, ApiError> {
+) -> Result<u32, BadResponse> {
     let ocid = get_ocid(character_name).await?;
     get_handicraft_level(ocid).await
 }
 
-async fn get_basic_information(ocid: String) -> Result<CharacterBasic, ApiError> {
+async fn get_basic_information(ocid: String) -> Result<CharacterBasic, BadResponse> {
     CharacterBasicRequest {
         ocid,
     }
@@ -260,7 +266,7 @@ async fn get_basic_information(ocid: String) -> Result<CharacterBasic, ApiError>
     .await
 }
 
-async fn get_guild_id(guild_name: String, world_name: String) -> Result<String, ApiError> {
+async fn get_guild_id(guild_name: String, world_name: String) -> Result<String, BadResponse> {
     GuildRequest {
         guild_name,
         world_name,
@@ -270,7 +276,9 @@ async fn get_guild_id(guild_name: String, world_name: String) -> Result<String, 
     .map(|guild| guild.oguild_id)
 }
 
-async fn get_guild_basic_information(oguild_id: String) -> Result<GuildBasicInformation, ApiError> {
+async fn get_guild_basic_information(
+    oguild_id: String,
+) -> Result<GuildBasicInformation, BadResponse> {
     GuildBasicInformationRequest {
         oguild_id,
     }
@@ -281,7 +289,7 @@ async fn get_guild_basic_information(oguild_id: String) -> Result<GuildBasicInfo
 pub async fn get_guild_skill_level_by_character_name(
     character_name: String,
     skill_name: &'static str,
-) -> Result<u32, ApiError> {
+) -> Result<u32, BadResponse> {
     let ocid = get_ocid(character_name).await?;
     let basic_info = get_basic_information(ocid).await?;
 
