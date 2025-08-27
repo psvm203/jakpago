@@ -148,7 +148,7 @@ impl ApiRequest for GuildRequest {
     }
 }
 
-#[allow(dead_code)]
+#[allow(clippy::struct_field_names, dead_code)]
 #[derive(Deserialize)]
 struct GuildSkill {
     skill_name: String,
