@@ -16,10 +16,7 @@ struct Theme {
 
 fn load_themes() -> Vec<Theme> {
     serde_yaml::from_str(THEME_DATA)
-        .map_err(|err| {
-            gloo_console::error!(THEME_DATA_ERROR_MESSAGE, err.to_string());
-            err
-        })
+        .inspect_err(|e| gloo_console::error!(THEME_DATA_ERROR_MESSAGE, e.to_string()))
         .unwrap_or_default()
 }
 
