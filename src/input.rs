@@ -1,4 +1,6 @@
 use crate::api;
+use crate::calculator;
+
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use wasm_bindgen_futures::spawn_local;
@@ -180,10 +182,15 @@ fn field_item(field_states: &UseMapHandle<FieldId, u32>, field: &Field) -> Html 
 fn get_tooltip(field_id: FieldId, value: u32) -> Option<String> {
     match field_id {
         FieldId::Handicraft => {
-            Some(format!("성공 확률 {}%p 증가", f64::from(value / 5 * 5) / 10.0))
+            Some(format!("성공 확률 {}%p 증가", calculator::handicraft_effect(value)))
         }
-        FieldId::EnhancementMastery => Some(format!("성공 확률 {value}%p 증가")),
-        FieldId::UpgradeSalvation => Some(format!("실패 시 {value}% 확률로 횟수 차감 방지")),
+        FieldId::EnhancementMastery => {
+            Some(format!("성공 확률 {}%p 증가", calculator::enhance_mastery_effect(value)))
+        }
+        FieldId::UpgradeSalvation => Some(format!(
+            "실패 시 {}% 확률로 횟수 차감 방지",
+            calculator::upgrade_salvation_effect(value)
+        )),
         _ => None,
     }
 }

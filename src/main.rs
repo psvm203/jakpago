@@ -1,4 +1,5 @@
 mod api;
+mod calculator;
 mod input;
 mod theme;
 
