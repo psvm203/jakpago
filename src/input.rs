@@ -257,7 +257,7 @@ fn calculate(
     field_storage: &UseLocalStorageHandle<HashMap<FieldId, u32>>,
 ) -> Callback<MouseEvent> {
     let storage = field_storage.clone();
-    let value = states.filtered(&fields);
+    let value = states.filtered(fields);
 
     Callback::from({
         move |_| {
