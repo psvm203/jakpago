@@ -46,7 +46,7 @@ struct States {
 
 impl States {
     fn new(handle: UseMapHandle<FieldId, u32>) -> Self {
-        States {
+        Self {
             handle,
         }
     }
