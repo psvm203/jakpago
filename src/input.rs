@@ -39,6 +39,40 @@ struct Field {
     max: u32,
 }
 
+#[derive(Clone)]
+struct States {
+    handle: UseMapHandle<FieldId, u32>,
+}
+
+impl States {
+    fn new(handle: UseMapHandle<FieldId, u32>) -> Self {
+        States {
+            handle,
+        }
+    }
+
+    fn set(&self, map: HashMap<FieldId, u32>) {
+        self.handle.set(map);
+    }
+
+    fn insert(&self, key: FieldId, value: u32) {
+        self.handle.insert(key, value);
+    }
+
+    fn get(&self, key: &FieldId) -> Option<u32> {
+        self.handle.current().get(key).copied()
+    }
+
+    fn filtered(&self, fields: &HashMap<FieldId, Field>) -> HashMap<FieldId, u32> {
+        self.handle
+            .current()
+            .iter()
+            .filter(|&(id, &value)| fields[id].min <= value && value <= fields[id].max)
+            .map(|(&id, &value)| (id, value))
+            .collect()
+    }
+}
+
 fn load_fields() -> Vec<Field> {
     match serde_yaml::from_str(FIELD_DATA) {
         Ok(fields) => fields,
@@ -49,8 +83,8 @@ fn load_fields() -> Vec<Field> {
     }
 }
 
-fn search_character(field_states: &UseMapHandle<FieldId, u32>) -> Callback<KeyboardEvent> {
-    let field_states = field_states.clone();
+fn search_character(states: &States) -> Callback<KeyboardEvent> {
+    let states = states.clone();
 
     Callback::from(move |event: KeyboardEvent| {
         if event.key() == KEY_ENTER {
@@ -58,14 +92,14 @@ fn search_character(field_states: &UseMapHandle<FieldId, u32>) -> Callback<Keybo
             let input = target.and_then(|t| t.dyn_into::<HtmlInputElement>().ok());
 
             if let Some(character_name) = input {
-                let field_states = field_states.clone();
+                let states = states.clone();
 
                 spawn_local(async move {
                     let handicraft_level =
                         api::get_handicraft_level_by_character_name(character_name.value()).await;
 
                     if let Ok(handicraft_level) = handicraft_level {
-                        field_states.insert(FieldId::Handicraft, handicraft_level);
+                        states.insert(FieldId::Handicraft, handicraft_level);
                     }
 
                     let enhance_mastery_level = api::get_guild_skill_level_by_character_name(
@@ -75,7 +109,7 @@ fn search_character(field_states: &UseMapHandle<FieldId, u32>) -> Callback<Keybo
                     .await;
 
                     if let Ok(enhance_mastery_level) = enhance_mastery_level {
-                        field_states.insert(FieldId::EnhancementMastery, enhance_mastery_level);
+                        states.insert(FieldId::EnhancementMastery, enhance_mastery_level);
                     }
 
                     let upgrade_salvation_level = api::get_guild_skill_level_by_character_name(
@@ -85,7 +119,7 @@ fn search_character(field_states: &UseMapHandle<FieldId, u32>) -> Callback<Keybo
                     .await;
 
                     if let Ok(upgrade_salvation_level) = upgrade_salvation_level {
-                        field_states.insert(FieldId::UpgradeSalvation, upgrade_salvation_level);
+                        states.insert(FieldId::UpgradeSalvation, upgrade_salvation_level);
                     }
                 });
             }
@@ -93,8 +127,8 @@ fn search_character(field_states: &UseMapHandle<FieldId, u32>) -> Callback<Keybo
     })
 }
 
-fn character_search_item(field_states: &UseMapHandle<FieldId, u32>) -> Html {
-    let onkeydown = search_character(field_states);
+fn character_search_item(states: &States) -> Html {
+    let onkeydown = search_character(states);
 
     html! {
         <label class={"input"}>
@@ -127,8 +161,8 @@ fn character_search_item(field_states: &UseMapHandle<FieldId, u32>) -> Html {
     }
 }
 
-fn on_field_change(field_states: &UseMapHandle<FieldId, u32>, field: &Field) -> Callback<Event> {
-    let states = field_states.clone();
+fn on_field_change(states: &States, field: &Field) -> Callback<Event> {
+    let states = states.clone();
     let min = field.min;
     let max = field.max;
     let id = field.id;
@@ -153,11 +187,11 @@ fn on_field_change(field_states: &UseMapHandle<FieldId, u32>, field: &Field) -> 
     })
 }
 
-fn field_item(field_states: &UseMapHandle<FieldId, u32>, field: &Field) -> Html {
-    let value = field_states.current().get(&field.id).map(u32::to_string);
+fn field_item(states: &States, field: &Field) -> Html {
+    let value = states.get(&field.id).map(|x| x.to_string());
     let min = field.min.to_string();
     let max = field.max.to_string();
-    let onchange = on_field_change(field_states, field);
+    let onchange = on_field_change(states, field);
 
     html! {
         <div>
@@ -195,8 +229,8 @@ fn get_tooltip(field_id: FieldId, value: u32) -> Option<String> {
     }
 }
 
-fn tooltip_item(field_states: &UseMapHandle<FieldId, u32>, field_id: FieldId) -> Html {
-    let value = *field_states.current().get(&field_id).unwrap_or(&0);
+fn tooltip_item(states: &States, field_id: FieldId) -> Html {
+    let value = states.get(&field_id).unwrap_or(0);
     let tooltip = get_tooltip(field_id, value);
 
     html! {
@@ -219,29 +253,25 @@ fn fieldset_item(legend: &'static str, contents: Html) -> Html {
 
 fn calculate(
     fields: &HashMap<FieldId, Field>,
-    field_states: &UseMapHandle<FieldId, u32>,
+    states: &States,
     field_storage: &UseLocalStorageHandle<HashMap<FieldId, u32>>,
 ) -> Callback<MouseEvent> {
     let storage = field_storage.clone();
+    let value = states.filtered(&fields);
 
-    let map: HashMap<FieldId, u32> = field_states
-        .current()
-        .iter()
-        .filter(|&(id, &value)| fields[id].min <= value && value <= fields[id].max)
-        .map(|(&id, &value)| (id, value))
-        .collect();
-
-    Callback::from(move |_| {
-        storage.set(map.clone());
+    Callback::from({
+        move |_| {
+            storage.set(value.clone());
+        }
     })
 }
 
 fn calculate_button(
     fields: &HashMap<FieldId, Field>,
-    field_states: &UseMapHandle<FieldId, u32>,
+    states: &States,
     field_storage: &UseLocalStorageHandle<HashMap<FieldId, u32>>,
 ) -> Html {
-    let onclick = calculate(fields, field_states, field_storage);
+    let onclick = calculate(fields, states, field_storage);
 
     html! {
         <button class={"btn btn-primary"} {onclick}>
@@ -252,16 +282,16 @@ fn calculate_button(
 
 #[function_component]
 pub fn InputSection() -> Html {
-    let field_states = use_map(HashMap::<FieldId, u32>::new());
+    let states = States::new(use_map(HashMap::<FieldId, u32>::new()));
     let field_storage = use_local_storage::<HashMap<FieldId, u32>>(FIELD_STORAGE_KEY.to_owned());
 
     {
+        let states = states.clone();
         let field_storage = field_storage.clone();
-        let field_states = field_states.clone();
 
         use_effect_once(move || {
             if let Some(storage) = field_storage.as_ref() {
-                field_states.set(storage.clone());
+                states.set(storage.clone());
             }
 
             || {}
@@ -277,8 +307,8 @@ pub fn InputSection() -> Html {
             .map(|id| {
                 html! {
                     <div>
-                        { field_item(&field_states, &fields[id]) }
-                        { tooltip_item(&field_states, *id) }
+                        { field_item(&states, &fields[id]) }
+                        { tooltip_item(&states, *id) }
                     </div>
                 }
             })
@@ -286,24 +316,24 @@ pub fn InputSection() -> Html {
 
     let potential_fieldset = html! {
         <div>
-            { character_search_item(&field_states) }
+            { character_search_item(&states) }
             { potential_fieldset }
         </div>
     };
 
     let item_fieldset: Html = [FieldId::UpgradeableCount, FieldId::TraceRequired]
         .iter()
-        .map(|id| field_item(&field_states, &fields[id]))
+        .map(|id| field_item(&states, &fields[id]))
         .collect();
 
-    let price_fieldset = field_item(&field_states, &fields[&FieldId::TracePrice]);
+    let price_fieldset = field_item(&states, &fields[&FieldId::TracePrice]);
 
     html! {
         <div class={"grid grid-cols-6 gap-48 p-16"}>
             { fieldset_item(POTENTIAL_LEGEND, potential_fieldset) }
             { fieldset_item(EQUIPMENT_LEGEND, item_fieldset) }
             { fieldset_item(PRICE_LEGEND, price_fieldset) }
-            { calculate_button(&fields, &field_states, &field_storage) }
+            { calculate_button(&fields, &states, &field_storage) }
         </div>
     }
 }
