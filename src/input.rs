@@ -59,8 +59,8 @@ impl States {
         self.handle.insert(key, value);
     }
 
-    fn get(&self, key: &FieldId) -> Option<u32> {
-        self.handle.current().get(key).copied()
+    fn get(&self, key: FieldId) -> Option<u32> {
+        self.handle.current().get(&key).copied()
     }
 
     fn filtered(&self, fields: &HashMap<FieldId, Field>) -> HashMap<FieldId, u32> {
@@ -188,7 +188,7 @@ fn on_field_change(states: &States, field: &Field) -> Callback<Event> {
 }
 
 fn field_item(states: &States, field: &Field) -> Html {
-    let value = states.get(&field.id).map(|x| x.to_string());
+    let value = states.get(field.id).map(|x| x.to_string());
     let min = field.min.to_string();
     let max = field.max.to_string();
     let onchange = on_field_change(states, field);
@@ -230,7 +230,7 @@ fn get_tooltip(field_id: FieldId, value: u32) -> Option<String> {
 }
 
 fn tooltip_item(states: &States, field_id: FieldId) -> Html {
-    let value = states.get(&field_id).unwrap_or(0);
+    let value = states.get(field_id).unwrap_or(0);
     let tooltip = get_tooltip(field_id, value);
 
     html! {
