@@ -87,7 +87,7 @@ impl State {
         self.map.current().get(&key).copied()
     }
 
-    fn filtered(&self, fields: &Fields) -> FieldMap {
+    fn filtered(&self, fields: &FieldRegistry) -> FieldMap {
         self.map
             .current()
             .iter()
@@ -191,11 +191,11 @@ impl State {
     }
 }
 
-struct Fields {
+struct FieldRegistry {
     map: HashMap<FieldId, Field>,
 }
 
-impl Fields {
+impl FieldRegistry {
     fn load() -> Self {
         let map = serde_yaml::from_str::<Vec<Field>>(FIELD_DATA)
             .inspect_err(|err| {
@@ -279,7 +279,7 @@ fn fieldset_item(legend: &'static str, contents: Html) -> Html {
     }
 }
 
-fn calculate(fields: &Fields, states: &State) -> Callback<MouseEvent> {
+fn calculate(fields: &FieldRegistry, states: &State) -> Callback<MouseEvent> {
     let states = states.clone();
     let value = states.filtered(fields);
 
@@ -290,7 +290,7 @@ fn calculate(fields: &Fields, states: &State) -> Callback<MouseEvent> {
     })
 }
 
-fn calculate_button(fields: &Fields, states: &State) -> Html {
+fn calculate_button(fields: &FieldRegistry, states: &State) -> Html {
     let onclick = calculate(fields, states);
 
     html! {
@@ -319,7 +319,7 @@ pub fn InputSection() -> Html {
     }
 
     let states = State::new(map, storage);
-    let fields = Fields::load();
+    let fields = FieldRegistry::load();
 
     let potential_fieldset: Html =
         [FieldId::Handicraft, FieldId::EnhancementMastery, FieldId::UpgradeSalvation]
