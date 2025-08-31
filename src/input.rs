@@ -61,13 +61,19 @@ impl FieldId {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Clone, Deserialize)]
 struct Field {
     id: FieldId,
     label: &'static str,
     placeholder: &'static str,
     min: u32,
     max: u32,
+}
+
+impl Field {
+    fn is_valid_value(&self, value: u32) -> bool {
+        self.min <= value && value <= self.max
+    }
 }
 
 type FieldMap = HashMap<FieldId, u32>;
@@ -230,8 +236,7 @@ impl FieldRegistry {
 
 fn on_field_change(states: &State, field: &Field) -> Callback<Event> {
     let states = states.clone();
-    let min = field.min;
-    let max = field.max;
+    let field = field.clone();
     let id = field.id;
 
     Callback::from(move |event: Event| {
@@ -240,15 +245,8 @@ fn on_field_change(states: &State, field: &Field) -> Callback<Event> {
 
         if let Some(input) = input
             && let Ok(value) = input.value().parse::<u32>()
+            && field.is_valid_value(value)
         {
-            if value < min {
-                return;
-            }
-
-            if value > max {
-                return;
-            }
-
             states.insert(id, value);
         }
     })
