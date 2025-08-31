@@ -39,37 +39,41 @@ struct Field {
     max: u32,
 }
 
+type FieldMap = HashMap<FieldId, u32>;
+
 #[derive(Clone)]
 struct States {
-    handle: UseMapHandle<FieldId, u32>,
+    map: UseMapHandle<FieldId, u32>,
+    storage: UseLocalStorageHandle<FieldMap>,
 }
 
 impl States {
-    const fn new(handle: UseMapHandle<FieldId, u32>) -> Self {
+    fn new(map: UseMapHandle<FieldId, u32>, storage: UseLocalStorageHandle<FieldMap>) -> Self {
         Self {
-            handle,
+            map,
+            storage,
         }
     }
 
-    fn set(&self, map: HashMap<FieldId, u32>) {
-        self.handle.set(map);
-    }
-
     fn insert(&self, key: FieldId, value: u32) {
-        self.handle.insert(key, value);
+        self.map.insert(key, value);
     }
 
     fn get(&self, key: FieldId) -> Option<u32> {
-        self.handle.current().get(&key).copied()
+        self.map.current().get(&key).copied()
     }
 
-    fn filtered(&self, fields: &HashMap<FieldId, Field>) -> HashMap<FieldId, u32> {
-        self.handle
+    fn filtered(&self, fields: &HashMap<FieldId, Field>) -> FieldMap {
+        self.map
             .current()
             .iter()
             .filter(|&(id, &value)| fields[id].min <= value && value <= fields[id].max)
             .map(|(&id, &value)| (id, value))
             .collect()
+    }
+
+    fn save_to_storage(&self, value: FieldMap) {
+        self.storage.set(value);
     }
 }
 
@@ -251,27 +255,19 @@ fn fieldset_item(legend: &'static str, contents: Html) -> Html {
     }
 }
 
-fn calculate(
-    fields: &HashMap<FieldId, Field>,
-    states: &States,
-    field_storage: &UseLocalStorageHandle<HashMap<FieldId, u32>>,
-) -> Callback<MouseEvent> {
-    let storage = field_storage.clone();
+fn calculate(fields: &HashMap<FieldId, Field>, states: &States) -> Callback<MouseEvent> {
+    let states = states.clone();
     let value = states.filtered(fields);
 
     Callback::from({
         move |_| {
-            storage.set(value.clone());
+            states.save_to_storage(value.clone());
         }
     })
 }
 
-fn calculate_button(
-    fields: &HashMap<FieldId, Field>,
-    states: &States,
-    field_storage: &UseLocalStorageHandle<HashMap<FieldId, u32>>,
-) -> Html {
-    let onclick = calculate(fields, states, field_storage);
+fn calculate_button(fields: &HashMap<FieldId, Field>, states: &States) -> Html {
+    let onclick = calculate(fields, states);
 
     html! {
         <button class={"btn btn-primary"} {onclick}>
@@ -282,21 +278,23 @@ fn calculate_button(
 
 #[function_component]
 pub fn InputSection() -> Html {
-    let states = States::new(use_map(HashMap::<FieldId, u32>::new()));
-    let field_storage = use_local_storage::<HashMap<FieldId, u32>>(FIELD_STORAGE_KEY.to_owned());
+    let map = use_map(HashMap::<FieldId, u32>::new());
+    let storage = use_local_storage::<FieldMap>(FIELD_STORAGE_KEY.to_owned());
 
     {
-        let states = states.clone();
-        let field_storage = field_storage.clone();
+        let map = map.clone();
+        let storage = storage.clone();
 
         use_effect_once(move || {
-            if let Some(storage) = field_storage.as_ref() {
-                states.set(storage.clone());
+            if let Some(storage) = storage.as_ref() {
+                map.set(storage.clone());
             }
 
             || {}
         });
     }
+
+    let states = States::new(map, storage);
 
     let fields: HashMap<FieldId, Field> =
         load_fields().into_iter().map(|field| (field.id, field)).collect();
@@ -333,7 +331,7 @@ pub fn InputSection() -> Html {
             { fieldset_item(POTENTIAL_LEGEND, potential_fieldset) }
             { fieldset_item(EQUIPMENT_LEGEND, item_fieldset) }
             { fieldset_item(PRICE_LEGEND, price_fieldset) }
-            { calculate_button(&fields, &states, &field_storage) }
+            { calculate_button(&fields, &states) }
         </div>
     }
 }
