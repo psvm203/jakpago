@@ -100,6 +100,35 @@ impl State {
         self.storage.set(value);
     }
 
+    async fn fetch_character_data(states: State, character_name: String) {
+        let handicraft_level =
+            api::get_handicraft_level_by_character_name(character_name.clone()).await;
+
+        if let Ok(handicraft_level) = handicraft_level {
+            states.insert(FieldId::Handicraft, handicraft_level);
+        }
+
+        let enhance_mastery_level = api::get_guild_skill_level_by_character_name(
+            character_name.clone(),
+            SKILL_NAME_ENHANCE_MASTERY,
+        )
+        .await;
+
+        if let Ok(enhance_mastery_level) = enhance_mastery_level {
+            states.insert(FieldId::EnhancementMastery, enhance_mastery_level);
+        }
+
+        let upgrade_salvation_level = api::get_guild_skill_level_by_character_name(
+            character_name,
+            SKILL_NAME_UPGRADE_SALVATION,
+        )
+        .await;
+
+        if let Ok(upgrade_salvation_level) = upgrade_salvation_level {
+            states.insert(FieldId::UpgradeSalvation, upgrade_salvation_level);
+        }
+    }
+
     fn search_character(&self) -> Callback<KeyboardEvent> {
         let states = self.clone();
 
@@ -110,35 +139,10 @@ impl State {
 
                 if let Some(character_name) = input {
                     let states = states.clone();
+                    let name = character_name.value();
 
                     spawn_local(async move {
-                        let handicraft_level =
-                            api::get_handicraft_level_by_character_name(character_name.value())
-                                .await;
-
-                        if let Ok(handicraft_level) = handicraft_level {
-                            states.insert(FieldId::Handicraft, handicraft_level);
-                        }
-
-                        let enhance_mastery_level = api::get_guild_skill_level_by_character_name(
-                            character_name.value(),
-                            SKILL_NAME_ENHANCE_MASTERY,
-                        )
-                        .await;
-
-                        if let Ok(enhance_mastery_level) = enhance_mastery_level {
-                            states.insert(FieldId::EnhancementMastery, enhance_mastery_level);
-                        }
-
-                        let upgrade_salvation_level = api::get_guild_skill_level_by_character_name(
-                            character_name.value(),
-                            SKILL_NAME_UPGRADE_SALVATION,
-                        )
-                        .await;
-
-                        if let Ok(upgrade_salvation_level) = upgrade_salvation_level {
-                            states.insert(FieldId::UpgradeSalvation, upgrade_salvation_level);
-                        }
+                        Self::fetch_character_data(states, name).await;
                     });
                 }
             }
