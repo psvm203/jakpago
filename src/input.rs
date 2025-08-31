@@ -63,11 +63,11 @@ impl States {
         self.map.current().get(&key).copied()
     }
 
-    fn filtered(&self, fields: &HashMap<FieldId, Field>) -> FieldMap {
+    fn filtered(&self, fields: &Fields) -> FieldMap {
         self.map
             .current()
             .iter()
-            .filter(|&(id, &value)| fields[id].min <= value && value <= fields[id].max)
+            .filter(|&(&id, &value)| fields.get(id).min <= value && value <= fields.get(id).max)
             .map(|(&id, &value)| (id, value))
             .collect()
     }
@@ -77,13 +77,29 @@ impl States {
     }
 }
 
-fn load_fields() -> Vec<Field> {
-    match serde_yaml::from_str(FIELD_DATA) {
-        Ok(fields) => fields,
-        Err(err) => {
-            gloo_console::error!(FIELD_DATA_ERROR_MESSAGE, err.to_string());
-            vec![]
+struct Fields {
+    map: HashMap<FieldId, Field>,
+}
+
+impl Fields {
+    fn load() -> Self {
+        let vec: Vec<Field> = match serde_yaml::from_str(FIELD_DATA) {
+            Ok(fields) => fields,
+            Err(err) => {
+                gloo_console::error!(FIELD_DATA_ERROR_MESSAGE, err.to_string());
+                vec![]
+            }
+        };
+
+        let map: HashMap<FieldId, Field> = vec.into_iter().map(|field| (field.id, field)).collect();
+
+        Self {
+            map,
         }
+    }
+
+    fn get(&self, id: FieldId) -> &Field {
+        self.map.get(&id).unwrap()
     }
 }
 
@@ -255,7 +271,7 @@ fn fieldset_item(legend: &'static str, contents: Html) -> Html {
     }
 }
 
-fn calculate(fields: &HashMap<FieldId, Field>, states: &States) -> Callback<MouseEvent> {
+fn calculate(fields: &Fields, states: &States) -> Callback<MouseEvent> {
     let states = states.clone();
     let value = states.filtered(fields);
 
@@ -266,7 +282,7 @@ fn calculate(fields: &HashMap<FieldId, Field>, states: &States) -> Callback<Mous
     })
 }
 
-fn calculate_button(fields: &HashMap<FieldId, Field>, states: &States) -> Html {
+fn calculate_button(fields: &Fields, states: &States) -> Html {
     let onclick = calculate(fields, states);
 
     html! {
@@ -278,7 +294,7 @@ fn calculate_button(fields: &HashMap<FieldId, Field>, states: &States) -> Html {
 
 #[function_component]
 pub fn InputSection() -> Html {
-    let map = use_map(HashMap::<FieldId, u32>::new());
+    let map = use_map(FieldMap::new());
     let storage = use_local_storage::<FieldMap>(FIELD_STORAGE_KEY.to_owned());
 
     {
@@ -295,18 +311,16 @@ pub fn InputSection() -> Html {
     }
 
     let states = States::new(map, storage);
-
-    let fields: HashMap<FieldId, Field> =
-        load_fields().into_iter().map(|field| (field.id, field)).collect();
+    let fields = Fields::load();
 
     let potential_fieldset: Html =
         [FieldId::Handicraft, FieldId::EnhancementMastery, FieldId::UpgradeSalvation]
             .iter()
-            .map(|id| {
+            .map(|&id| {
                 html! {
                     <div>
-                        { field_item(&states, &fields[id]) }
-                        { tooltip_item(&states, *id) }
+                        { field_item(&states, fields.get(id)) }
+                        { tooltip_item(&states, id) }
                     </div>
                 }
             })
@@ -321,10 +335,10 @@ pub fn InputSection() -> Html {
 
     let item_fieldset: Html = [FieldId::UpgradeableCount, FieldId::TraceRequired]
         .iter()
-        .map(|id| field_item(&states, &fields[id]))
+        .map(|&id| field_item(&states, fields.get(id)))
         .collect();
 
-    let price_fieldset = field_item(&states, &fields[&FieldId::TracePrice]);
+    let price_fieldset = field_item(&states, fields.get(FieldId::TracePrice));
 
     html! {
         <div class={"grid grid-cols-6 gap-48 p-16"}>
