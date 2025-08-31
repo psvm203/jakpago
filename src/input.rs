@@ -28,6 +28,7 @@ mod constants {
     }
 }
 
+#[allow(clippy::wildcard_imports)]
 use constants::*;
 
 #[derive(Clone, Copy, Deserialize, Eq, Hash, PartialEq, Serialize)]
