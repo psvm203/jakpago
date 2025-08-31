@@ -17,8 +17,8 @@ const PRICE_LEGEND: &str = "시세 정보";
 const CHARACTER_SEARCH_PLACEHOLDER: &str = "캐릭터 검색";
 const KEY_ENTER: &str = "Enter";
 const CALCULATE: &str = "계산";
-const SKILL_NAME_ENHANCE_MASTERY: &str = "강화의 달인";
-const SKILL_NAME_UPGRADE_SALVATION: &str = "실패를 두려워 않는";
+const ENHANCE_MASTERY: &str = "강화의 달인";
+const UPGRADE_SALVATION: &str = "실패를 두려워 않는";
 
 #[derive(Clone, Copy, Deserialize, Eq, Hash, PartialEq, Serialize)]
 enum FieldId {
@@ -108,21 +108,16 @@ impl State {
             states.insert(FieldId::Handicraft, handicraft_level);
         }
 
-        let enhance_mastery_level = api::get_guild_skill_level_by_character_name(
-            character_name.clone(),
-            SKILL_NAME_ENHANCE_MASTERY,
-        )
-        .await;
+        let enhance_mastery_level =
+            api::get_guild_skill_level_by_character_name(character_name.clone(), ENHANCE_MASTERY)
+                .await;
 
         if let Ok(enhance_mastery_level) = enhance_mastery_level {
             states.insert(FieldId::EnhancementMastery, enhance_mastery_level);
         }
 
-        let upgrade_salvation_level = api::get_guild_skill_level_by_character_name(
-            character_name,
-            SKILL_NAME_UPGRADE_SALVATION,
-        )
-        .await;
+        let upgrade_salvation_level =
+            api::get_guild_skill_level_by_character_name(character_name, UPGRADE_SALVATION).await;
 
         if let Ok(upgrade_salvation_level) = upgrade_salvation_level {
             states.insert(FieldId::UpgradeSalvation, upgrade_salvation_level);
