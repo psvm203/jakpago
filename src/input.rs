@@ -8,17 +8,27 @@ use web_sys::{HtmlInputElement, wasm_bindgen::JsCast};
 use yew::{Callback, Event, Html, KeyboardEvent, MouseEvent, function_component, html};
 use yew_hooks::{UseLocalStorageHandle, UseMapHandle, use_effect_once, use_local_storage, use_map};
 
-const FIELD_DATA: &str = include_str!("field.yaml");
-const FIELD_DATA_ERROR_MESSAGE: &str = "필드 데이터 오류:";
-const FIELD_STORAGE_KEY: &str = "field";
-const POTENTIAL_LEGEND: &str = "확률 정보";
-const EQUIPMENT_LEGEND: &str = "장비 정보";
-const PRICE_LEGEND: &str = "시세 정보";
-const CHARACTER_SEARCH_PLACEHOLDER: &str = "캐릭터 검색";
-const KEY_ENTER: &str = "Enter";
-const CALCULATE: &str = "계산";
-const ENHANCE_MASTERY: &str = "강화의 달인";
-const UPGRADE_SALVATION: &str = "실패를 두려워 않는";
+mod constants {
+    pub const FIELD_DATA: &str = include_str!("field.yaml");
+    pub const FIELD_STORAGE_KEY: &str = "field";
+    pub const KEY_ENTER: &str = "Enter";
+
+    pub mod texts {
+        pub const FIELD_DATA_ERROR_MESSAGE: &str = "필드 데이터 오류:";
+        pub const POTENTIAL_LEGEND: &str = "확률 정보";
+        pub const EQUIPMENT_LEGEND: &str = "장비 정보";
+        pub const PRICE_LEGEND: &str = "시세 정보";
+        pub const CHARACTER_SEARCH_PLACEHOLDER: &str = "캐릭터 검색";
+        pub const CALCULATE: &str = "계산";
+    }
+
+    pub mod skills {
+        pub const ENHANCE_MASTERY: &str = "강화의 달인";
+        pub const UPGRADE_SALVATION: &str = "실패를 두려워 않는";
+    }
+}
+
+use constants::*;
 
 #[derive(Clone, Copy, Deserialize, Eq, Hash, PartialEq, Serialize)]
 enum FieldId {
@@ -108,16 +118,19 @@ impl State {
             states.insert(FieldId::Handicraft, handicraft_level);
         }
 
-        let enhance_mastery_level =
-            api::get_guild_skill_level_by_character_name(character_name.clone(), ENHANCE_MASTERY)
-                .await;
+        let enhance_mastery_level = api::get_guild_skill_level_by_character_name(
+            character_name.clone(),
+            skills::ENHANCE_MASTERY,
+        )
+        .await;
 
         if let Ok(enhance_mastery_level) = enhance_mastery_level {
             states.insert(FieldId::EnhancementMastery, enhance_mastery_level);
         }
 
         let upgrade_salvation_level =
-            api::get_guild_skill_level_by_character_name(character_name, UPGRADE_SALVATION).await;
+            api::get_guild_skill_level_by_character_name(character_name, skills::UPGRADE_SALVATION)
+                .await;
 
         if let Ok(upgrade_salvation_level) = upgrade_salvation_level {
             states.insert(FieldId::UpgradeSalvation, upgrade_salvation_level);
@@ -168,7 +181,7 @@ impl State {
                 <input
                     type={"search"}
                     class={"grow"}
-                    placeholder={CHARACTER_SEARCH_PLACEHOLDER}
+                    placeholder={texts::CHARACTER_SEARCH_PLACEHOLDER}
                     {onkeydown}
                 />
                 <kbd class="kbd kbd-sm">
@@ -198,7 +211,7 @@ impl FieldRegistry {
     fn load() -> Self {
         let map = serde_yaml::from_str::<Vec<Field>>(FIELD_DATA)
             .inspect_err(|err| {
-                gloo_console::error!(FIELD_DATA_ERROR_MESSAGE, err.to_string());
+                gloo_console::error!(texts::FIELD_DATA_ERROR_MESSAGE, err.to_string());
             })
             .unwrap_or_default()
             .into_iter()
@@ -294,7 +307,7 @@ fn calculate_button(fields: &FieldRegistry, states: &State) -> Html {
 
     html! {
         <button class={"btn btn-primary"} {onclick}>
-            { CALCULATE }
+            { texts::CALCULATE }
         </button>
     }
 }
@@ -349,9 +362,9 @@ pub fn InputSection() -> Html {
 
     html! {
         <div class={"grid grid-cols-6 gap-48 p-16"}>
-            { fieldset_item(POTENTIAL_LEGEND, potential_fieldset) }
-            { fieldset_item(EQUIPMENT_LEGEND, item_fieldset) }
-            { fieldset_item(PRICE_LEGEND, price_fieldset) }
+            { fieldset_item(texts::POTENTIAL_LEGEND, potential_fieldset) }
+            { fieldset_item(texts::EQUIPMENT_LEGEND, item_fieldset) }
+            { fieldset_item(texts::PRICE_LEGEND, price_fieldset) }
             { calculate_button(&fields, &states) }
         </div>
     }
