@@ -198,9 +198,8 @@ struct Fields {
 impl Fields {
     fn load() -> Self {
         let map = serde_yaml::from_str::<Vec<Field>>(FIELD_DATA)
-            .map_err(|err| {
+            .inspect_err(|err| {
                 gloo_console::error!(FIELD_DATA_ERROR_MESSAGE, err.to_string());
-                err
             })
             .unwrap_or_default()
             .into_iter()
