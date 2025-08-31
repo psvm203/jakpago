@@ -30,6 +30,27 @@ enum FieldId {
     TracePrice,
 }
 
+impl FieldId {
+    fn get_tooltip(self, value: u32) -> Option<String> {
+        #[allow(clippy::enum_glob_use)]
+        use FieldId::*;
+
+        match self {
+            Handicraft => {
+                Some(format!("성공 확률 {}%p 증가", calculator::handicraft_effect(value)))
+            }
+            EnhancementMastery => {
+                Some(format!("성공 확률 {}%p 증가", calculator::enhance_mastery_effect(value)))
+            }
+            UpgradeSalvation => Some(format!(
+                "실패 시 {}% 확률로 횟수 차감 방지",
+                calculator::upgrade_salvation_effect(value)
+            )),
+            _ => None,
+        }
+    }
+}
+
 #[derive(Deserialize)]
 struct Field {
     id: FieldId,
@@ -160,7 +181,7 @@ impl States {
 
     fn tooltip_item(&self, field_id: FieldId) -> Html {
         let value = self.get(field_id).unwrap_or(0);
-        let tooltip = get_tooltip(field_id, value);
+        let tooltip = field_id.get_tooltip(value);
 
         html! {
             <div>
@@ -245,22 +266,6 @@ fn field_item(states: &States, field: &Field) -> Html {
                 {onchange}
             />
         </div>
-    }
-}
-
-fn get_tooltip(field_id: FieldId, value: u32) -> Option<String> {
-    match field_id {
-        FieldId::Handicraft => {
-            Some(format!("성공 확률 {}%p 증가", calculator::handicraft_effect(value)))
-        }
-        FieldId::EnhancementMastery => {
-            Some(format!("성공 확률 {}%p 증가", calculator::enhance_mastery_effect(value)))
-        }
-        FieldId::UpgradeSalvation => Some(format!(
-            "실패 시 {}% 확률로 횟수 차감 방지",
-            calculator::upgrade_salvation_effect(value)
-        )),
-        _ => None,
     }
 }
 
