@@ -72,7 +72,7 @@ struct Field {
 }
 
 impl Field {
-    fn is_valid_value(&self, value: u32) -> bool {
+    const fn is_valid_value(&self, value: u32) -> bool {
         self.min <= value && value <= self.max
     }
 }
