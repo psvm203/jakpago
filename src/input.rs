@@ -117,7 +117,7 @@ impl State {
         self.storage.set(value);
     }
 
-    async fn fetch_character_data(states: State, character_name: String) {
+    async fn fetch_character_data(states: Self, character_name: String) {
         let handicraft_level =
             api::get_handicraft_level_by_character_name(character_name.clone()).await;
 
