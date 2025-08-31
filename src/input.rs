@@ -63,12 +63,12 @@ struct Field {
 type FieldMap = HashMap<FieldId, u32>;
 
 #[derive(Clone)]
-struct States {
+struct State {
     map: UseMapHandle<FieldId, u32>,
     storage: UseLocalStorageHandle<FieldMap>,
 }
 
-impl States {
+impl State {
     const fn new(
         map: UseMapHandle<FieldId, u32>,
         storage: UseLocalStorageHandle<FieldMap>,
@@ -216,7 +216,7 @@ impl Fields {
     }
 }
 
-fn on_field_change(states: &States, field: &Field) -> Callback<Event> {
+fn on_field_change(states: &State, field: &Field) -> Callback<Event> {
     let states = states.clone();
     let min = field.min;
     let max = field.max;
@@ -242,7 +242,7 @@ fn on_field_change(states: &States, field: &Field) -> Callback<Event> {
     })
 }
 
-fn field_item(states: &States, field: &Field) -> Html {
+fn field_item(states: &State, field: &Field) -> Html {
     let value = states.get(field.id).map(|x| x.to_string());
     let min = field.min.to_string();
     let max = field.max.to_string();
@@ -279,7 +279,7 @@ fn fieldset_item(legend: &'static str, contents: Html) -> Html {
     }
 }
 
-fn calculate(fields: &Fields, states: &States) -> Callback<MouseEvent> {
+fn calculate(fields: &Fields, states: &State) -> Callback<MouseEvent> {
     let states = states.clone();
     let value = states.filtered(fields);
 
@@ -290,7 +290,7 @@ fn calculate(fields: &Fields, states: &States) -> Callback<MouseEvent> {
     })
 }
 
-fn calculate_button(fields: &Fields, states: &States) -> Html {
+fn calculate_button(fields: &Fields, states: &State) -> Html {
     let onclick = calculate(fields, states);
 
     html! {
@@ -318,7 +318,7 @@ pub fn InputSection() -> Html {
         });
     }
 
-    let states = States::new(map, storage);
+    let states = State::new(map, storage);
     let fields = Fields::load();
 
     let potential_fieldset: Html =
