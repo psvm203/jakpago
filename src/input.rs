@@ -48,7 +48,10 @@ struct States {
 }
 
 impl States {
-    fn new(map: UseMapHandle<FieldId, u32>, storage: UseLocalStorageHandle<FieldMap>) -> Self {
+    const fn new(
+        map: UseMapHandle<FieldId, u32>,
+        storage: UseLocalStorageHandle<FieldMap>,
+    ) -> Self {
         Self {
             map,
             storage,
