@@ -176,15 +176,15 @@ struct Fields {
 
 impl Fields {
     fn load() -> Self {
-        let vec: Vec<Field> = match serde_yaml::from_str(FIELD_DATA) {
-            Ok(fields) => fields,
-            Err(err) => {
+        let map = serde_yaml::from_str::<Vec<Field>>(FIELD_DATA)
+            .map_err(|err| {
                 gloo_console::error!(FIELD_DATA_ERROR_MESSAGE, err.to_string());
-                vec![]
-            }
-        };
-
-        let map: HashMap<FieldId, Field> = vec.into_iter().map(|field| (field.id, field)).collect();
+                err
+            })
+            .unwrap_or_default()
+            .into_iter()
+            .map(|field: Field| (field.id, field))
+            .collect::<HashMap<FieldId, Field>>();
 
         Self {
             map,
