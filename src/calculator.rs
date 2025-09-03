@@ -59,6 +59,10 @@ impl UpgradeContext {
             + f64::from(enhance_mastery_effect(enhance_mastery_level))
     }
 
+    const fn get_upgradeable_count(&self) -> u32 {
+        self.upgradeable_count
+    }
+
     fn calculate_recovery_rate(success_rate: f64, upgrade_salvation_level: u32) -> f64 {
         let fail_rate = 100.0 - success_rate;
         let base_recovery_rate = f64::from(upgrade_salvation_effect(upgrade_salvation_level));
@@ -66,16 +70,12 @@ impl UpgradeContext {
         fail_rate * base_recovery_rate / 100.0
     }
 
-    fn calculate_white_price(trace_price: u32) -> u32 {
+    const fn calculate_white_price(trace_price: u32) -> u32 {
         trace_price * WHITE_TRACE_PRICE
     }
 
-    fn calculate_innocence_price(trace_price: u32) -> u32 {
+    const fn calculate_innocence_price(trace_price: u32) -> u32 {
         trace_price * INNOCENCE_TRACE_PRICE
-    }
-
-    fn get_upgradeable_count(&self) -> u32 {
-        self.upgradeable_count
     }
 }
 
@@ -93,7 +93,7 @@ struct Position {
 }
 
 impl Position {
-    fn new(failure: usize, success: usize, upgradeable_count: usize) -> Self {
+    const fn new(failure: usize, success: usize, upgradeable_count: usize) -> Self {
         Self {
             failure,
             success,
@@ -101,7 +101,7 @@ impl Position {
         }
     }
 
-    fn initial(upgradeable_count: usize) -> Self {
+    const fn initial(upgradeable_count: usize) -> Self {
         let failure = upgradeable_count;
         let success = 0;
         let upgradeable_count = upgradeable_count;
@@ -109,19 +109,19 @@ impl Position {
         Self::new(failure, success, upgradeable_count)
     }
 
-    fn get_failure(&self) -> usize {
+    const fn get_failure(&self) -> usize {
         self.failure
     }
 
-    fn get_success(&self) -> usize {
+    const fn get_success(&self) -> usize {
         self.success
     }
 
-    fn get_upgradeable_count(&self) -> usize {
+    const fn get_upgradeable_count(&self) -> usize {
         self.upgradeable_count
     }
 
-    fn up(&self) -> Option<Self> {
+    const fn up(&self) -> Option<Self> {
         if self.get_failure() == 0 {
             return None;
         }
@@ -133,7 +133,7 @@ impl Position {
         })
     }
 
-    fn right(&self) -> Option<Self> {
+    const fn right(&self) -> Option<Self> {
         let next_success = self.get_success() + 1;
 
         if next_success >= self.get_upgradeable_count() {
@@ -188,7 +188,7 @@ impl Strategy {
             .collect()
     }
 
-    fn get_upgradeable_count(&self) -> u32 {
+    const fn get_upgradeable_count(&self) -> u32 {
         self.upgrade_context.get_upgradeable_count()
     }
 
