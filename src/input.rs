@@ -32,13 +32,15 @@ mod constants {
 use constants::*;
 
 #[derive(Clone, Copy, Deserialize, Eq, Hash, PartialEq, Serialize)]
-enum FieldId {
+pub enum FieldId {
     Handicraft,
     EnhancementMastery,
     UpgradeSalvation,
     UpgradeableCount,
     TraceRequired,
     TracePrice,
+    BaseSuccessRate,
+    UpgradePrice,
 }
 
 impl FieldId {
@@ -80,7 +82,7 @@ impl Field {
 type FieldMap = HashMap<FieldId, u32>;
 
 #[derive(Clone)]
-struct State {
+pub struct State {
     map: UseMapHandle<FieldId, u32>,
     storage: UseLocalStorageHandle<FieldMap>,
 }
@@ -100,8 +102,12 @@ impl State {
         self.map.insert(key, value);
     }
 
-    fn get(&self, key: FieldId) -> Option<u32> {
+    pub fn get(&self, key: FieldId) -> Option<u32> {
         self.map.current().get(&key).copied()
+    }
+
+    pub fn get_or_default(&self, key: FieldId) -> u32 {
+        self.map.current().get(&key).copied().unwrap_or_default()
     }
 
     fn filtered(&self, fields: &FieldRegistry) -> FieldMap {
@@ -293,6 +299,7 @@ fn fieldset_item(legend: &'static str, contents: Html) -> Html {
 fn calculate(fields: &FieldRegistry, states: &State) -> Callback<MouseEvent> {
     let states = states.clone();
     let value = states.filtered(fields);
+    let _ = calculator::optimized_strategy;
 
     Callback::from({
         move |_| {
