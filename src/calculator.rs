@@ -104,7 +104,6 @@ impl Position {
     const fn initial(upgradeable_count: usize) -> Self {
         let failure = upgradeable_count;
         let success = 0;
-        let upgradeable_count = upgradeable_count;
 
         Self::new(failure, success, upgradeable_count)
     }
@@ -126,7 +125,7 @@ impl Position {
             return None;
         }
 
-        Some(Position {
+        Some(Self {
             failure: self.get_failure() - 1,
             success: self.get_success(),
             upgradeable_count: self.get_upgradeable_count(),
@@ -140,7 +139,7 @@ impl Position {
             return None;
         }
 
-        Some(Position {
+        Some(Self {
             failure: self.get_failure(),
             success: next_success,
             upgradeable_count: self.get_upgradeable_count(),
