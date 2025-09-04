@@ -1,11 +1,12 @@
 mod api;
+mod app;
 mod input;
 mod state;
 mod strategy;
 mod theme;
 
 use state::State;
-use yew::{Html, function_component, html};
+use yew::prelude::*;
 use yew_hooks::{use_effect_once, use_local_storage, use_map};
 
 const FIELD_STORAGE_KEY: &str = "fields";
@@ -29,13 +30,7 @@ fn App() -> Html {
     }
 
     let state = State::new(map, storage);
-
-    html! {
-        <div>
-            <theme::ThemeController />
-            { input::input_section(&state) }
-        </div>
-    }
+    app::contents(&state)
 }
 
 fn main() {
