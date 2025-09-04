@@ -121,12 +121,12 @@ impl State {
         self.storage.set(value);
     }
 
-    async fn fetch_character_data(states: Self, character_name: String) {
+    async fn fetch_character_data(state: Self, character_name: String) {
         let handicraft_level =
             api::get_handicraft_level_by_character_name(character_name.clone()).await;
 
         if let Ok(handicraft_level) = handicraft_level {
-            states.insert(FieldId::Handicraft, handicraft_level);
+            state.insert(FieldId::Handicraft, handicraft_level);
         }
 
         let enhance_mastery_level = api::get_guild_skill_level_by_character_name(
@@ -136,7 +136,7 @@ impl State {
         .await;
 
         if let Ok(enhance_mastery_level) = enhance_mastery_level {
-            states.insert(FieldId::EnhancementMastery, enhance_mastery_level);
+            state.insert(FieldId::EnhancementMastery, enhance_mastery_level);
         }
 
         let upgrade_salvation_level =
@@ -144,12 +144,12 @@ impl State {
                 .await;
 
         if let Ok(upgrade_salvation_level) = upgrade_salvation_level {
-            states.insert(FieldId::UpgradeSalvation, upgrade_salvation_level);
+            state.insert(FieldId::UpgradeSalvation, upgrade_salvation_level);
         }
     }
 
     fn search_character(&self) -> Callback<KeyboardEvent> {
-        let states = self.clone();
+        let state = self.clone();
 
         Callback::from(move |event: KeyboardEvent| {
             if event.key() == KEY_ENTER {
@@ -157,11 +157,11 @@ impl State {
                 let input = target.and_then(|t| t.dyn_into::<HtmlInputElement>().ok());
 
                 if let Some(character_name) = input {
-                    let states = states.clone();
+                    let state = state.clone();
                     let name = character_name.value();
 
                     spawn_local(async move {
-                        Self::fetch_character_data(states, name).await;
+                        Self::fetch_character_data(state, name).await;
                     });
                 }
             }
@@ -239,8 +239,8 @@ impl FieldRegistry {
     }
 }
 
-fn on_field_change(states: &State, field: &Field) -> Callback<Event> {
-    let states = states.clone();
+fn on_field_change(state: &State, field: &Field) -> Callback<Event> {
+    let state = state.clone();
     let field = field.clone();
     let id = field.id;
 
@@ -252,16 +252,16 @@ fn on_field_change(states: &State, field: &Field) -> Callback<Event> {
             && let Ok(value) = input.value().parse::<u32>()
             && field.is_valid_value(value)
         {
-            states.insert(id, value);
+            state.insert(id, value);
         }
     })
 }
 
-fn field_item(states: &State, field: &Field) -> Html {
-    let value = states.get(field.id).map(|x| x.to_string());
+fn field_item(state: &State, field: &Field) -> Html {
+    let value = state.get(field.id).map(|x| x.to_string());
     let min = field.min.to_string();
     let max = field.max.to_string();
-    let onchange = on_field_change(states, field);
+    let onchange = on_field_change(state, field);
 
     html! {
         <div>
@@ -294,20 +294,20 @@ fn fieldset_item(legend: &'static str, contents: Html) -> Html {
     }
 }
 
-fn calculate(fields: &FieldRegistry, states: &State) -> Callback<MouseEvent> {
-    let states = states.clone();
-    let value = states.filtered(fields);
+fn calculate(fields: &FieldRegistry, state: &State) -> Callback<MouseEvent> {
+    let state = state.clone();
+    let value = state.filtered(fields);
     let _ = strategy::optimized_strategy;
 
     Callback::from({
         move |_| {
-            states.save_to_storage(value.clone());
+            state.save_to_storage(value.clone());
         }
     })
 }
 
-fn calculate_button(fields: &FieldRegistry, states: &State) -> Html {
-    let onclick = calculate(fields, states);
+fn calculate_button(fields: &FieldRegistry, state: &State) -> Html {
+    let onclick = calculate(fields, state);
 
     html! {
         <button class={"btn btn-primary"} {onclick}>
@@ -334,7 +334,7 @@ pub fn InputSection() -> Html {
         });
     }
 
-    let states = State::new(map, storage);
+    let state = State::new(map, storage);
     let fields = FieldRegistry::load();
 
     let potential_fieldset: Html =
@@ -343,8 +343,8 @@ pub fn InputSection() -> Html {
             .map(|&id| {
                 html! {
                     <div>
-                        { field_item(&states, fields.get(id)) }
-                        { states.tooltip_item( id) }
+                        { field_item(&state, fields.get(id)) }
+                        { state.tooltip_item( id) }
                     </div>
                 }
             })
@@ -352,24 +352,24 @@ pub fn InputSection() -> Html {
 
     let potential_fieldset = html! {
         <div>
-            { states.character_search_item() }
+            { state.character_search_item() }
             { potential_fieldset }
         </div>
     };
 
     let item_fieldset: Html = [FieldId::UpgradeableCount, FieldId::TraceRequired]
         .iter()
-        .map(|&id| field_item(&states, fields.get(id)))
+        .map(|&id| field_item(&state, fields.get(id)))
         .collect();
 
-    let price_fieldset = field_item(&states, fields.get(FieldId::TracePrice));
+    let price_fieldset = field_item(&state, fields.get(FieldId::TracePrice));
 
     html! {
         <div class={"grid grid-cols-6 gap-48 p-16"}>
             { fieldset_item(texts::POTENTIAL_LEGEND, potential_fieldset) }
             { fieldset_item(texts::EQUIPMENT_LEGEND, item_fieldset) }
             { fieldset_item(texts::PRICE_LEGEND, price_fieldset) }
-            { calculate_button(&fields, &states) }
+            { calculate_button(&fields, &state) }
         </div>
     }
 }
