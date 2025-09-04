@@ -6,7 +6,7 @@ use web_sys::{HtmlInputElement, wasm_bindgen::JsCast};
 use yew::{Callback, Event, Html, MouseEvent, html};
 
 mod constants {
-    pub const FIELD_DATA: &str = include_str!("field.yaml");
+    pub const FIELD_DATA: &str = include_str!("assets/data/field.yaml");
 
     pub mod texts {
         pub const FIELD_DATA_ERROR_MESSAGE: &str = "필드 데이터 오류:";
