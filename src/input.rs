@@ -1,30 +1,19 @@
-use crate::api;
-use crate::strategy;
+use crate::{State, strategy};
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use wasm_bindgen_futures::spawn_local;
 use web_sys::{HtmlInputElement, wasm_bindgen::JsCast};
-use yew::{Callback, Event, Html, KeyboardEvent, MouseEvent, function_component, html};
-use yew_hooks::{UseLocalStorageHandle, UseMapHandle, use_effect_once, use_local_storage, use_map};
+use yew::{Callback, Event, Html, MouseEvent, html};
 
 mod constants {
     pub const FIELD_DATA: &str = include_str!("field.yaml");
-    pub const FIELD_STORAGE_KEY: &str = "field";
-    pub const KEY_ENTER: &str = "Enter";
 
     pub mod texts {
         pub const FIELD_DATA_ERROR_MESSAGE: &str = "필드 데이터 오류:";
         pub const POTENTIAL_LEGEND: &str = "확률 정보";
         pub const EQUIPMENT_LEGEND: &str = "장비 정보";
         pub const PRICE_LEGEND: &str = "시세 정보";
-        pub const CHARACTER_SEARCH_PLACEHOLDER: &str = "캐릭터 검색";
         pub const CALCULATE: &str = "계산";
-    }
-
-    pub mod skills {
-        pub const ENHANCE_MASTERY: &str = "강화의 달인";
-        pub const UPGRADE_SALVATION: &str = "실패를 두려워 않는";
     }
 }
 
@@ -44,7 +33,7 @@ pub enum FieldId {
 }
 
 impl FieldId {
-    fn get_tooltip(self, value: u32) -> Option<String> {
+    pub fn get_tooltip(self, value: u32) -> Option<String> {
         #[allow(clippy::enum_glob_use)]
         use FieldId::*;
 
@@ -63,7 +52,7 @@ impl FieldId {
 }
 
 #[derive(Clone, Deserialize)]
-struct Field {
+pub struct Field {
     id: FieldId,
     label: &'static str,
     placeholder: &'static str,
@@ -75,146 +64,19 @@ impl Field {
     const fn is_valid_value(&self, value: u32) -> bool {
         self.min <= value && value <= self.max
     }
-}
 
-type FieldMap = HashMap<FieldId, u32>;
-
-#[derive(Clone)]
-pub struct State {
-    map: UseMapHandle<FieldId, u32>,
-    storage: UseLocalStorageHandle<FieldMap>,
-}
-
-impl State {
-    const fn new(
-        map: UseMapHandle<FieldId, u32>,
-        storage: UseLocalStorageHandle<FieldMap>,
-    ) -> Self {
-        Self {
-            map,
-            storage,
-        }
+    pub fn get_min(&self) -> u32 {
+        self.min
     }
 
-    fn insert(&self, key: FieldId, value: u32) {
-        self.map.insert(key, value);
-    }
-
-    pub fn get(&self, key: FieldId) -> Option<u32> {
-        self.map.current().get(&key).copied()
-    }
-
-    pub fn get_or_default(&self, key: FieldId) -> u32 {
-        self.map.current().get(&key).copied().unwrap_or_default()
-    }
-
-    fn filtered(&self, fields: &FieldRegistry) -> FieldMap {
-        self.map
-            .current()
-            .iter()
-            .filter(|&(&id, &value)| fields.get(id).min <= value && value <= fields.get(id).max)
-            .map(|(&id, &value)| (id, value))
-            .collect()
-    }
-
-    fn save_to_storage(&self, value: FieldMap) {
-        self.storage.set(value);
-    }
-
-    async fn fetch_character_data(state: Self, character_name: String) {
-        let handicraft_level =
-            api::get_handicraft_level_by_character_name(character_name.clone()).await;
-
-        if let Ok(handicraft_level) = handicraft_level {
-            state.insert(FieldId::Handicraft, handicraft_level);
-        }
-
-        let enhance_mastery_level = api::get_guild_skill_level_by_character_name(
-            character_name.clone(),
-            skills::ENHANCE_MASTERY,
-        )
-        .await;
-
-        if let Ok(enhance_mastery_level) = enhance_mastery_level {
-            state.insert(FieldId::EnhancementMastery, enhance_mastery_level);
-        }
-
-        let upgrade_salvation_level =
-            api::get_guild_skill_level_by_character_name(character_name, skills::UPGRADE_SALVATION)
-                .await;
-
-        if let Ok(upgrade_salvation_level) = upgrade_salvation_level {
-            state.insert(FieldId::UpgradeSalvation, upgrade_salvation_level);
-        }
-    }
-
-    fn search_character(&self) -> Callback<KeyboardEvent> {
-        let state = self.clone();
-
-        Callback::from(move |event: KeyboardEvent| {
-            if event.key() == KEY_ENTER {
-                let target = event.target();
-                let input = target.and_then(|t| t.dyn_into::<HtmlInputElement>().ok());
-
-                if let Some(character_name) = input {
-                    let state = state.clone();
-                    let name = character_name.value();
-
-                    spawn_local(async move {
-                        Self::fetch_character_data(state, name).await;
-                    });
-                }
-            }
-        })
-    }
-
-    fn character_search_item(&self) -> Html {
-        let onkeydown = self.search_character();
-
-        html! {
-            <label class={"input"}>
-                <svg
-                    class={"h-[1em] opacity-50"}
-                    xmlns={"http://www.w3.org/2000/svg"}
-                    viewBox={"0 0 24 24"}
-                >
-                    <g
-                        stroke-linejoin={"round"}
-                        stroke-linecap={"round"}
-                        stroke-width={"2.5"}
-                        fill={"none"}
-                        stroke={"currentColor"}
-                    >
-                        <circle cx={"11"} cy={"11"} r={"8"} />
-                        <path d={"m21 21-4.3-4.3"} />
-                    </g>
-                </svg>
-                <input
-                    type={"search"}
-                    class={"grow"}
-                    placeholder={texts::CHARACTER_SEARCH_PLACEHOLDER}
-                    {onkeydown}
-                />
-                <kbd class="kbd kbd-sm">
-                    { "↵" }
-                </kbd>
-            </label>
-        }
-    }
-
-    fn tooltip_item(&self, field_id: FieldId) -> Html {
-        let value = self.get(field_id).unwrap_or(0);
-        let tooltip = field_id.get_tooltip(value);
-
-        html! {
-            <div>
-                { tooltip }
-            </div>
-        }
+    pub fn get_max(&self) -> u32 {
+        self.min
     }
 }
 
-struct FieldRegistry {
+pub type FieldMap = HashMap<FieldId, u32>;
+
+pub(crate) struct FieldRegistry {
     map: HashMap<FieldId, Field>,
 }
 
@@ -234,7 +96,7 @@ impl FieldRegistry {
         }
     }
 
-    fn get(&self, id: FieldId) -> &Field {
+    pub fn get(&self, id: FieldId) -> &Field {
         self.map.get(&id).unwrap()
     }
 }
@@ -316,25 +178,7 @@ fn calculate_button(fields: &FieldRegistry, state: &State) -> Html {
     }
 }
 
-#[function_component]
-pub fn InputSection() -> Html {
-    let map = use_map(FieldMap::new());
-    let storage = use_local_storage::<FieldMap>(FIELD_STORAGE_KEY.to_owned());
-
-    {
-        let map = map.clone();
-        let storage = storage.clone();
-
-        use_effect_once(move || {
-            if let Some(storage) = storage.as_ref() {
-                map.set(storage.clone());
-            }
-
-            || {}
-        });
-    }
-
-    let state = State::new(map, storage);
+pub fn input_section(state: &State) -> Html {
     let fields = FieldRegistry::load();
 
     let potential_fieldset: Html =

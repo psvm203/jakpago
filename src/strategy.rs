@@ -1,10 +1,11 @@
-use crate::input;
+use crate::{State, input};
 
 use std::collections::VecDeque;
 
 const WHITE_TRACE_PRICE: u32 = 20000;
 const INNOCENCE_TRACE_PRICE: u32 = 12000;
 
+#[allow(dead_code)]
 #[derive(Clone)]
 struct UpgradeContext {
     upgradeable_count: u32,
@@ -16,7 +17,7 @@ struct UpgradeContext {
 }
 
 impl UpgradeContext {
-    fn new(state: &input::State) -> Self {
+    fn new(state: &State) -> Self {
         let upgradeable_count = state.get_or_default(input::FieldId::UpgradeableCount);
 
         let base_success_rate = state.get_or_default(input::FieldId::BaseSuccessRate);
@@ -260,7 +261,7 @@ pub const fn upgrade_salvation_effect(upgrade_salvation_level: u32) -> u32 {
     upgrade_salvation_level
 }
 
-pub fn optimized_strategy(state: &input::State) -> Strategy {
+pub fn optimized_strategy(state: &State) -> Strategy {
     let context = UpgradeContext::new(state);
     let strategy = Strategy::new(context);
     strategy.optimized()
