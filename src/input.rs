@@ -1,5 +1,5 @@
 use crate::api;
-use crate::calculator;
+use crate::strategy;
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -49,15 +49,13 @@ impl FieldId {
         use FieldId::*;
 
         match self {
-            Handicraft => {
-                Some(format!("성공 확률 {}%p 증가", calculator::handicraft_effect(value)))
-            }
+            Handicraft => Some(format!("성공 확률 {}%p 증가", strategy::handicraft_effect(value))),
             EnhancementMastery => {
-                Some(format!("성공 확률 {}%p 증가", calculator::enhance_mastery_effect(value)))
+                Some(format!("성공 확률 {}%p 증가", strategy::enhance_mastery_effect(value)))
             }
             UpgradeSalvation => Some(format!(
                 "실패 시 {}% 확률로 횟수 차감 방지",
-                calculator::upgrade_salvation_effect(value)
+                strategy::upgrade_salvation_effect(value)
             )),
             _ => None,
         }
@@ -299,7 +297,7 @@ fn fieldset_item(legend: &'static str, contents: Html) -> Html {
 fn calculate(fields: &FieldRegistry, states: &State) -> Callback<MouseEvent> {
     let states = states.clone();
     let value = states.filtered(fields);
-    let _ = calculator::optimized_strategy;
+    let _ = strategy::optimized_strategy;
 
     Callback::from({
         move |_| {

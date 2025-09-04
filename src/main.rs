@@ -1,5 +1,5 @@
 mod api;
-mod calculator;
+mod strategy;
 mod input;
 mod theme;
 
