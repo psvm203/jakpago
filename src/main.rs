@@ -1,9 +1,11 @@
 mod api;
 mod app;
 mod input;
+mod models;
 mod state;
 mod strategy;
-mod theme;
+mod viewmodels;
+mod views;
 
 use state::State;
 use yew::prelude::*;

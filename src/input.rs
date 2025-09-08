@@ -1,5 +1,4 @@
 use crate::{State, strategy};
-
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use web_sys::{HtmlInputElement, wasm_bindgen::JsCast};
