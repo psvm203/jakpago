@@ -46,26 +46,30 @@ fn ThemeController() -> Html {
 #[function_component]
 fn ThemeOptions() -> Html {
     let theme_viewmodel = use_context::<ThemeViewModel>().unwrap();
+
+    theme_viewmodel
+        .themes_data()
+        .iter()
+        .map(|theme_data| theme_option(&theme_viewmodel, theme_data))
+        .collect()
+}
+
+fn theme_option(theme_viewmodel: &ThemeViewModel, theme_data: &ThemeData) -> Html {
     let current_theme = theme_viewmodel.current_theme();
+    let checked = theme_data.value() == current_theme;
+    let onchange = theme_viewmodel.create_theme_change_callback(theme_data.value());
 
-    let theme_option = |theme_data: &ThemeData| -> Html {
-        let checked = theme_data.value() == current_theme;
-        let onchange = theme_viewmodel.create_theme_change_callback(theme_data.value());
-
-        html! {
-            <li key={theme_data.value()}>
-                <input
-                    type={"radio"}
-                    name={"theme-dropdown"}
-                    class={"theme-controller w-full btn btn-sm btn-block btn-ghost justify-start"}
-                    aria-label={theme_data.name()}
-                    value={theme_data.value()}
-                    {checked}
-                    {onchange}
-                />
-            </li>
-        }
-    };
-
-    theme_viewmodel.themes_data().iter().map(theme_option).collect()
+    html! {
+        <li key={theme_data.value()}>
+            <input
+                type={"radio"}
+                name={"theme-dropdown"}
+                class={"theme-controller w-full btn btn-sm btn-block btn-ghost justify-start"}
+                aria-label={theme_data.name()}
+                value={theme_data.value()}
+                {checked}
+                {onchange}
+            />
+        </li>
+    }
 }
