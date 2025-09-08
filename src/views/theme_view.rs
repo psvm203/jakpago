@@ -1,5 +1,5 @@
 use crate::viewmodels::theme_viewmodel::{ThemeData, ThemeViewModel};
-use yew::{Callback, ContextProvider, Event, Html, function_component, html, use_context};
+use yew::{ContextProvider, Html, function_component, html, use_context};
 
 mod constants {
     pub const THEME_LABEL: &str = "테마";
@@ -48,15 +48,9 @@ fn ThemeOptions() -> Html {
     let theme_viewmodel = use_context::<ThemeViewModel>().unwrap();
     let current_theme = theme_viewmodel.current_theme();
 
-    let create_theme_change_callback = |theme_value: &'static str| -> Callback<Event> {
-        let theme_viewmodel = theme_viewmodel.clone();
-        Callback::from(move |_| {
-            theme_viewmodel.set_current_theme(theme_value);
-        })
-    };
-
     let theme_option = |theme_data: &ThemeData| -> Html {
-        let onchange = create_theme_change_callback(theme_data.value());
+        let checked = theme_data.value() == current_theme;
+        let onchange = theme_viewmodel.create_theme_change_callback(theme_data.value());
 
         html! {
             <li key={theme_data.value()}>
@@ -66,7 +60,7 @@ fn ThemeOptions() -> Html {
                     class={"theme-controller w-full btn btn-sm btn-block btn-ghost justify-start"}
                     aria-label={theme_data.name()}
                     value={theme_data.value()}
-                    checked={theme_data.value() == current_theme}
+                    {checked}
                     {onchange}
                 />
             </li>

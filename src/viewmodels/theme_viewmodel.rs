@@ -1,5 +1,5 @@
 use crate::models::theme::Theme;
-use yew::hook;
+use yew::{Callback, Event, hook};
 use yew_hooks::{UseLocalStorageHandle, use_effect_once, use_local_storage};
 
 mod constants {
@@ -19,7 +19,7 @@ impl ThemeViewModel {
         self.current_theme.as_deref().unwrap_or(constants::THEME_DEFAULT_VALUE)
     }
 
-    pub fn set_current_theme(&self, theme_value: &'static str) {
+    fn set_current_theme(&self, theme_value: &'static str) {
         self.current_theme.set(theme_value.to_owned());
     }
 
@@ -49,6 +49,13 @@ impl ThemeViewModel {
 
     fn load_themes(yaml_data: &'static str) -> Vec<Theme> {
         serde_yaml::from_str(yaml_data).unwrap()
+    }
+
+    pub fn create_theme_change_callback(&self, theme_value: &'static str) -> Callback<Event> {
+        let viewmodel = self.clone();
+        Callback::from(move |_: Event| {
+            viewmodel.set_current_theme(theme_value);
+        })
     }
 
     pub fn themes_data(&self) -> Vec<ThemeData> {
