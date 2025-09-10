@@ -1,9 +1,8 @@
-use crate::models::theme::Theme;
+use crate::models::theme::ThemeCollection;
 use yew::{Callback, Event, hook};
 use yew_hooks::{UseLocalStorageHandle, use_effect_once, use_local_storage};
 
 mod constants {
-    pub const THEME_DATA: &str = include_str!("../assets/data/theme.yaml");
     pub const THEME_STORAGE_KEY: &str = "theme";
     pub const THEME_DEFAULT_VALUE: &str = "default";
 }
@@ -11,7 +10,7 @@ mod constants {
 #[derive(Clone, PartialEq)]
 pub struct ThemeViewModel {
     current_theme: UseLocalStorageHandle<String>,
-    themes: Vec<Theme>,
+    theme_collection: ThemeCollection,
 }
 
 impl ThemeViewModel {
@@ -26,7 +25,7 @@ impl ThemeViewModel {
     pub fn new(current_theme: UseLocalStorageHandle<String>) -> Self {
         Self {
             current_theme,
-            themes: Self::load_themes(constants::THEME_DATA),
+            theme_collection: ThemeCollection::new(),
         }
     }
 
@@ -47,10 +46,6 @@ impl ThemeViewModel {
         theme
     }
 
-    fn load_themes(yaml_data: &'static str) -> Vec<Theme> {
-        serde_yaml::from_str(yaml_data).unwrap()
-    }
-
     pub fn create_theme_change_callback(&self, theme_value: &'static str) -> Callback<Event> {
         let viewmodel = self.clone();
         Callback::from(move |_: Event| {
@@ -59,7 +54,8 @@ impl ThemeViewModel {
     }
 
     pub fn themes_data(&self) -> Vec<ThemeData> {
-        self.themes
+        self.theme_collection
+            .themes()
             .iter()
             .map(|theme| ThemeData {
                 value: theme.value(),
