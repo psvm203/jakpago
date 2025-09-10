@@ -1,4 +1,4 @@
-use crate::viewmodels::theme_viewmodel::{ThemeData, ThemeViewModel};
+use crate::view_models::theme_view_model::{ThemeData, ThemeViewModel};
 use yew::{ContextProvider, Html, function_component, html, use_context};
 
 mod constants {

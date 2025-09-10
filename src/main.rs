@@ -4,7 +4,7 @@ mod input;
 mod models;
 mod state;
 mod strategy;
-mod viewmodels;
+mod view_models;
 mod views;
 
 use state::State;
