@@ -47,9 +47,9 @@ impl ThemeViewModel {
     }
 
     pub fn create_theme_change_callback(&self, theme_value: &'static str) -> Callback<Event> {
-        let viewmodel = self.clone();
+        let view_model = self.clone();
         Callback::from(move |_: Event| {
-            viewmodel.set_current_theme(theme_value);
+            view_model.set_current_theme(theme_value);
         })
     }
 

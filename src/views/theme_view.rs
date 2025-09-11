@@ -8,10 +8,10 @@ mod constants {
 #[function_component]
 pub fn Contents() -> Html {
     let theme = ThemeViewModel::use_theme();
-    let theme_viewmodel = ThemeViewModel::new(theme);
+    let view_model = ThemeViewModel::new(theme);
 
     html! {
-        <ContextProvider<ThemeViewModel> context={theme_viewmodel}>
+        <ContextProvider<ThemeViewModel> context={view_model}>
             <ThemeController />
         </ContextProvider<ThemeViewModel>>
     }
@@ -45,19 +45,19 @@ fn ThemeController() -> Html {
 
 #[function_component]
 fn ThemeOptions() -> Html {
-    let theme_viewmodel = use_context::<ThemeViewModel>().unwrap();
+    let view_model = use_context::<ThemeViewModel>().unwrap();
 
-    theme_viewmodel
+    view_model
         .themes_data()
         .iter()
-        .map(|theme_data| theme_option(&theme_viewmodel, theme_data))
+        .map(|theme_data| theme_option(&view_model, theme_data))
         .collect()
 }
 
-fn theme_option(theme_viewmodel: &ThemeViewModel, theme_data: &ThemeData) -> Html {
-    let current_theme = theme_viewmodel.current_theme();
+fn theme_option(view_model: &ThemeViewModel, theme_data: &ThemeData) -> Html {
+    let current_theme = view_model.current_theme();
     let checked = theme_data.value() == current_theme;
-    let onchange = theme_viewmodel.create_theme_change_callback(theme_data.value());
+    let onchange = view_model.create_theme_change_callback(theme_data.value());
 
     html! {
         <li key={theme_data.value()}>
