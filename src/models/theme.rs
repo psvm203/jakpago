@@ -6,7 +6,7 @@ mod constants {
 
 #[derive(Clone, Eq, PartialEq)]
 pub struct ThemeCollection {
-    themes: Vec<Theme>,
+    pub themes: Vec<Theme>,
 }
 
 impl ThemeCollection {
@@ -19,24 +19,10 @@ impl ThemeCollection {
     fn load_themes(yaml_data: &'static str) -> Vec<Theme> {
         serde_yaml::from_str(yaml_data).unwrap()
     }
-
-    pub fn themes(&self) -> &[Theme] {
-        &self.themes
-    }
 }
 
 #[derive(Clone, Deserialize, Eq, PartialEq)]
 pub struct Theme {
-    value: &'static str,
-    name: &'static str,
-}
-
-impl Theme {
-    pub const fn value(&self) -> &'static str {
-        self.value
-    }
-
-    pub const fn name(&self) -> &'static str {
-        self.name
-    }
+    pub value: &'static str,
+    pub name: &'static str,
 }

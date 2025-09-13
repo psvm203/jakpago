@@ -55,18 +55,18 @@ fn ThemeOptions() -> Html {
 }
 
 fn theme_option(view_model: &ThemeViewModel, theme_data: &ThemeData) -> Html {
-    let current_theme = view_model.current_theme();
-    let checked = theme_data.value() == current_theme;
-    let onchange = view_model.create_theme_change_callback(theme_data.value());
+    let current_theme = view_model.current_theme_or_default();
+    let checked = theme_data.value == current_theme;
+    let onchange = view_model.create_theme_change_callback(theme_data.value);
 
     html! {
-        <li key={theme_data.value()}>
+        <li key={theme_data.value}>
             <input
                 type={"radio"}
                 name={"theme-dropdown"}
                 class={"theme-controller w-full btn btn-sm btn-block btn-ghost justify-start"}
-                aria-label={theme_data.name()}
-                value={theme_data.value()}
+                aria-label={theme_data.name}
+                value={theme_data.value}
                 {checked}
                 {onchange}
             />

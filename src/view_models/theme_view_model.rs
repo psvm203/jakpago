@@ -14,7 +14,7 @@ pub struct ThemeViewModel {
 }
 
 impl ThemeViewModel {
-    pub fn current_theme(&self) -> &str {
+    pub fn current_theme_or_default(&self) -> &str {
         self.current_theme.as_deref().unwrap_or(constants::THEME_DEFAULT_VALUE)
     }
 
@@ -55,27 +55,17 @@ impl ThemeViewModel {
 
     pub fn themes_data(&self) -> Vec<ThemeData> {
         self.theme_collection
-            .themes()
+            .themes
             .iter()
             .map(|theme| ThemeData {
-                value: theme.value(),
-                name: theme.name(),
+                value: theme.value,
+                name: theme.name,
             })
             .collect()
     }
 }
 
 pub struct ThemeData {
-    value: &'static str,
-    name: &'static str,
-}
-
-impl ThemeData {
-    pub const fn value(&self) -> &'static str {
-        self.value
-    }
-
-    pub const fn name(&self) -> &'static str {
-        self.name
-    }
+    pub value: &'static str,
+    pub name: &'static str,
 }
