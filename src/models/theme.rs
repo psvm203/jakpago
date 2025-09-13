@@ -1,9 +1,3 @@
-use serde::Deserialize;
-
-mod constants {
-    pub const THEME_DATA: &str = include_str!("../assets/data/theme.yaml");
-}
-
 #[derive(Clone, Eq, PartialEq)]
 pub struct ThemeCollection {
     pub themes: Vec<Theme>,
@@ -12,16 +6,41 @@ pub struct ThemeCollection {
 impl ThemeCollection {
     pub fn new() -> Self {
         Self {
-            themes: Self::load_themes(constants::THEME_DATA),
+            themes: vec![
+                Theme {
+                    value: "default",
+                    name: "자동",
+                },
+                Theme {
+                    value: "light",
+                    name: "라이트",
+                },
+                Theme {
+                    value: "dark",
+                    name: "다크",
+                },
+                Theme {
+                    value: "caramellatte",
+                    name: "카라멜라떼",
+                },
+                Theme {
+                    value: "valentine",
+                    name: "발렌타인",
+                },
+                Theme {
+                    value: "aqua",
+                    name: "아쿠아",
+                },
+                Theme {
+                    value: "synthwave",
+                    name: "신스웨이브",
+                },
+            ],
         }
-    }
-
-    fn load_themes(yaml_data: &'static str) -> Vec<Theme> {
-        serde_yaml::from_str(yaml_data).unwrap()
     }
 }
 
-#[derive(Clone, Deserialize, Eq, PartialEq)]
+#[derive(Clone, Eq, PartialEq)]
 pub struct Theme {
     pub value: &'static str,
     pub name: &'static str,
