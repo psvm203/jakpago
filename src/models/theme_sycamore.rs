@@ -1,4 +1,4 @@
-#[derive(Clone, Eq, PartialEq)]
+#[derive(Clone)]
 pub struct ThemeCollection {
     pub themes: Vec<Theme>,
 }
@@ -9,39 +9,39 @@ impl ThemeCollection {
             themes: vec![
                 Theme {
                     value: "default",
-                    name: "자동",
+                    label: "자동",
                 },
                 Theme {
                     value: "light",
-                    name: "라이트",
+                    label: "라이트",
                 },
                 Theme {
                     value: "dark",
-                    name: "다크",
+                    label: "다크",
                 },
                 Theme {
                     value: "caramellatte",
-                    name: "카라멜라떼",
+                    label: "카라멜라떼",
                 },
                 Theme {
                     value: "valentine",
-                    name: "발렌타인",
+                    label: "발렌타인",
                 },
                 Theme {
                     value: "aqua",
-                    name: "아쿠아",
+                    label: "아쿠아",
                 },
                 Theme {
                     value: "synthwave",
-                    name: "신스웨이브",
+                    label: "신스웨이브",
                 },
             ],
         }
     }
 }
 
-#[derive(Clone, Eq, PartialEq)]
+#[derive(Clone)]
 pub struct Theme {
     pub value: &'static str,
-    pub name: &'static str,
+    pub label: &'static str,
 }
