@@ -1,5 +1,5 @@
-pub use crate::models::theme_sycamore::Theme;
-use crate::models::theme_sycamore::ThemeCollection;
+pub use crate::models::theme::Theme;
+use crate::models::theme::ThemeCollection;
 use gloo_storage::{LocalStorage, Storage};
 use sycamore::prelude::{Signal, create_signal};
 

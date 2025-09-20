@@ -1,1 +1,1 @@
-pub mod theme_sycamore;
+pub mod theme;

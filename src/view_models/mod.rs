@@ -1,1 +1,1 @@
-pub mod theme_view_model_sycamore;
+pub mod theme_view_model;
