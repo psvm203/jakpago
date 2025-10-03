@@ -4,7 +4,10 @@ pub use crate::models::upgrade_context::{
 };
 use crate::{
     models::upgrade_context,
-    utils::sycamore::{Callback, EventParser},
+    utils::{
+        api::get_handicraft,
+        sycamore::{Callback, EventParser, EventValue},
+    },
 };
 use gloo_storage::{LocalStorage, Storage};
 use sycamore::prelude::*;
@@ -35,6 +38,19 @@ impl UpgradeContextViewModel {
     {
         let upgrade_context = self.current_upgrade_context.get_clone();
         field_getter(&upgrade_context).map(|x| x.to_string())
+    }
+
+    pub fn character_search_callback(&self) -> Callback {
+        let current_upgrade_context = self.current_upgrade_context;
+
+        Callback::from(move |event: Event| {
+            if let Some(character_name) = event.value() {
+                let mut upgrade_context = current_upgrade_context.get_clone_untracked();
+                upgrade_context.handicraft = get_handicraft(character_name);
+                current_upgrade_context.set(upgrade_context.clone());
+                LocalStorage::set(constants::UPGRADE_CONTEXT_STORAGE_KEY, upgrade_context).unwrap();
+            }
+        })
     }
 
     fn create_callback<F>(&self, spec: &Spec, field_setter: F) -> Callback

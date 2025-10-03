@@ -54,6 +54,7 @@ fn probability_fields() -> Vec<View> {
     let upgrade_salvation_tooltip = view_model.upgrade_salvation_tooltip();
 
     [
+        CharacterSearch(),
         view! {
             (field(&spec_collection::HANDICRAFT, handicraft.clone(), handicraft_callback.clone()))
             (handicraft_tooltip)
@@ -109,6 +110,29 @@ fn price_fields() -> Vec<View> {
     .into_iter()
     .collect::<Vec<View>>()
     .join(|| view! { div(class="divider") })
+}
+
+#[component]
+fn CharacterSearch() -> View {
+    let view_model = use_context::<UpgradeContextViewModel>();
+    let onchange = view_model.character_search_callback();
+
+    view! {
+        label(class="input") {
+            svg(class="h-[1em] opacity-50", xmlns="http://www.w3.org/2000/svg", viewBox="0 0 24 24") {
+                g(stroke-linejoin="round",
+                stroke-linecap="round",
+                stroke-width="2.5",
+                fill="none",
+                stroke="currentColor") {
+                    circle(cx="11", cy="11", r="8") {}
+                    path(d="m21 21-4.3-4.3") {}
+                }
+            }
+            input(r#type="search", class="grow", placeholder="캐릭터 닉네임 검색", on:change=onchange) {}
+            kbd(class="kbd kbd-sm") { "↲" }
+        }
+    }
 }
 
 fn field(spec: &Spec, value: Option<String>, callback: Callback) -> View {

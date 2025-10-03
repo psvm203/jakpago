@@ -68,14 +68,24 @@ where
     }
 }
 
+pub trait EventValue {
+    fn value(&self) -> Option<String>;
+}
+
+impl EventValue for Event {
+    fn value(&self) -> Option<String> {
+        let target = self.target()?;
+        let input = target.dyn_into::<HtmlInputElement>().ok()?;
+        Some(input.value())
+    }
+}
+
 pub trait EventParser {
     fn parse(&self) -> Option<u32>;
 }
 
 impl EventParser for Event {
     fn parse(&self) -> Option<u32> {
-        let target = self.target()?;
-        let input = target.dyn_into::<HtmlInputElement>().ok()?;
-        input.value().parse().ok()
+        self.value().and_then(|value| value.parse().ok())
     }
 }
