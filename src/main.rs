@@ -1,5 +1,6 @@
 mod app;
 mod models;
+mod utils;
 mod view_models;
 mod views;
 
