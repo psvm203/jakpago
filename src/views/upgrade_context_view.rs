@@ -84,21 +84,9 @@ fn equipment_fields() -> Vec<View> {
     let trace_required_callback = view_model.trace_required_change_callback();
 
     [
-        field(
-            &spec_collection::EQUIPMENT_LEVEL,
-            equipment_level.clone(),
-            handicraft_callback.clone(),
-        ),
-        field(
-            &spec_collection::UPGRADEABLE_COUNT,
-            upgradeable_count.clone(),
-            upgradeable_count_callback.clone(),
-        ),
-        field(
-            &spec_collection::TRACE_REQUIRED,
-            trace_required.clone(),
-            trace_required_callback.clone(),
-        ),
+        field(&spec_collection::EQUIPMENT_LEVEL, equipment_level, handicraft_callback),
+        field(&spec_collection::UPGRADEABLE_COUNT, upgradeable_count, upgradeable_count_callback),
+        field(&spec_collection::TRACE_REQUIRED, trace_required, trace_required_callback),
     ]
     .into_iter()
     .collect::<Vec<View>>()

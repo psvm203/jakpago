@@ -22,7 +22,7 @@ impl UpgradeContextViewModel {
     }
 
     pub fn handicraft_change_callback(&self) -> Callback {
-        let signal = self.signal.clone();
+        let signal = self.signal;
 
         Callback::from(move |event: Event| {
             if let Some(value) = event.parse()
@@ -36,7 +36,7 @@ impl UpgradeContextViewModel {
     }
 
     pub fn enhance_mastery_change_callback(&self) -> Callback {
-        let signal = self.signal.clone();
+        let signal = self.signal;
 
         Callback::from(move |event: Event| {
             if let Some(value) = event.parse()
@@ -50,7 +50,7 @@ impl UpgradeContextViewModel {
     }
 
     pub fn upgrade_salvation_change_callback(&self) -> Callback {
-        let signal = self.signal.clone();
+        let signal = self.signal;
 
         Callback::from(move |event: Event| {
             if let Some(value) = event.parse()
@@ -64,7 +64,7 @@ impl UpgradeContextViewModel {
     }
 
     pub fn equipment_level_change_callback(&self) -> Callback {
-        let signal = self.signal.clone();
+        let signal = self.signal;
 
         Callback::from(move |event: Event| {
             if let Some(value) = event.parse()
@@ -78,7 +78,7 @@ impl UpgradeContextViewModel {
     }
 
     pub fn upgradeable_count_change_callback(&self) -> Callback {
-        let signal = self.signal.clone();
+        let signal = self.signal;
 
         Callback::from(move |event: Event| {
             if let Some(value) = event.parse()
@@ -92,7 +92,7 @@ impl UpgradeContextViewModel {
     }
 
     pub fn trace_required_change_callback(&self) -> Callback {
-        let signal = self.signal.clone();
+        let signal = self.signal;
 
         Callback::from(move |event: Event| {
             if let Some(value) = event.parse()
@@ -106,7 +106,7 @@ impl UpgradeContextViewModel {
     }
 
     pub fn trace_price_change_callback(&self) -> Callback {
-        let signal = self.signal.clone();
+        let signal = self.signal;
 
         Callback::from(move |event: Event| {
             if let Some(value) = event.parse()
