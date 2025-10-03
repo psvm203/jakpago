@@ -1,4 +1,4 @@
-use crate::view_models::theme_view_model::{Theme, ThemeViewModel};
+use crate::view_models::theme_view_model::{THEMES, Theme, ThemeViewModel};
 use sycamore::prelude::*;
 
 mod constants {
@@ -40,17 +40,15 @@ fn ThemeController() -> View {
 }
 
 fn theme_options() -> Vec<View> {
-    let view_model = use_context::<ThemeViewModel>();
-
-    view_model.theme_collection.themes.iter().map(theme_option).collect()
+    THEMES.iter().map(theme_option).collect()
 }
 
-fn theme_option(theme_data: &Theme) -> View {
+fn theme_option(theme: &Theme) -> View {
     let view_model = use_context::<ThemeViewModel>();
-    let label = theme_data.label;
-    let value = theme_data.value;
-    let checked = value == view_model.get_theme();
-    let onchange = move |_event: web_sys::Event| view_model.theme_change_callback(value);
+    let label = theme.label;
+    let value = theme.value;
+    let checked = value == view_model.current_theme.get_clone_untracked();
+    let onchange = view_model.theme_change_callback(value);
 
     view! {
         li {
