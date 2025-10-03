@@ -7,7 +7,7 @@ pub mod spec_collection {
     }
 
     impl Spec {
-        pub fn allows(&self, value: u32) -> bool {
+        pub const fn allows(&self, value: u32) -> bool {
             self.min <= value && value <= self.max
         }
     }
