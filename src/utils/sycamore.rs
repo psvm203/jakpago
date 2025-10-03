@@ -17,10 +17,10 @@ impl ViewVecExt for Vec<View> {
         F: Fn() -> View,
     {
         if self.is_empty() {
-            return Vec::new();
+            return Self::new();
         }
 
-        let mut result = Vec::with_capacity(self.len() * 2 - 1);
+        let mut result = Self::with_capacity(self.len() * 2 - 1);
 
         for (i, view) in self.into_iter().enumerate() {
             if i > 0 {
