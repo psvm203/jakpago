@@ -33,7 +33,7 @@ impl UpgradeContextViewModel {
     where
         F: Fn(&UpgradeContext) -> Option<u32>,
     {
-        let upgrade_context = self.current_upgrade_context.get_clone_untracked();
+        let upgrade_context = self.current_upgrade_context.get_clone();
         field_getter(&upgrade_context).map(|x| x.to_string())
     }
 
