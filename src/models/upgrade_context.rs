@@ -78,13 +78,13 @@ pub fn handicraft_tooltip(handicraft_level: u32) -> String {
 }
 
 pub fn enhance_mastery_tooltip(enhance_mastery_level: u32) -> String {
-    format!("성공 확률 {}%p 증가", enhance_mastery_level)
+    format!("성공 확률 {enhance_mastery_level}%p 증가")
 }
 
 pub fn upgrade_salvation_tooltip(upgrade_salvation_level: u32) -> String {
-    format!("실패 시 {}% 확률로 횟수 차감 방지", upgrade_salvation_level)
+    format!("실패 시 {upgrade_salvation_level}% 확률로 횟수 차감 방지")
 }
 
 pub fn trace_price_tooltip(trace_price: u32) -> String {
-    format!("{} 메소", trace_price)
+    format!("{trace_price} 메소")
 }
