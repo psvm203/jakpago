@@ -25,7 +25,7 @@ impl ThemeViewModel {
     }
 
     pub fn theme_change_callback(&self, theme_value: &'static str) -> Callback {
-        let current_theme = self.current_theme.clone();
+        let current_theme = self.current_theme;
 
         Callback::from(move |_event: Event| {
             current_theme.set(theme_value.to_owned());
