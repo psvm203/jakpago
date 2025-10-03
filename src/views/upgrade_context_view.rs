@@ -1,6 +1,6 @@
 use crate::utils::sycamore::{Callback, ViewVecExt};
 use crate::view_models::upgrade_context_view_model::{
-    Spec, UpgradeContext, UpgradeContextViewModel, spec_collection,
+    Spec, UpgradeContextViewModel, spec_collection,
 };
 use sycamore::prelude::*;
 
@@ -59,7 +59,7 @@ fn probability_fields() -> Vec<View> {
             (handicraft_tooltip)
         },
         view! {
-            (field(&spec_collection::ENHANCE_MASTERY,  enhance_mastery.clone(), enhance_mastery_callback.clone()))
+            (field(&spec_collection::ENHANCE_MASTERY, enhance_mastery.clone(), enhance_mastery_callback.clone()))
             (enhance_mastery_tooltip)
         },
         view! {
