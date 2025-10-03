@@ -122,12 +122,14 @@ impl UpgradeContextViewModel {
     pub fn handicraft_tooltip(&self) -> String {
         let handicraft_level =
             self.current_upgrade_context.get_clone_untracked().handicraft.unwrap_or_default();
+
         upgrade_context::handicraft_tooltip(handicraft_level)
     }
 
     pub fn enhance_mastery_tooltip(&self) -> String {
         let enhance_mastery_level =
             self.current_upgrade_context.get_clone_untracked().enhance_mastery.unwrap_or_default();
+
         upgrade_context::enhance_mastery_tooltip(enhance_mastery_level)
     }
 
@@ -137,12 +139,14 @@ impl UpgradeContextViewModel {
             .get_clone_untracked()
             .upgrade_salvation
             .unwrap_or_default();
+
         upgrade_context::upgrade_salvation_tooltip(upgrade_salvation_level)
     }
 
     pub fn trace_price_tooltip(&self) -> String {
         let trace_price_level =
             self.current_upgrade_context.get_clone_untracked().trace_price.unwrap_or_default();
+
         upgrade_context::trace_price_tooltip(trace_price_level)
     }
 }
