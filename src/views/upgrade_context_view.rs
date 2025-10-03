@@ -1,6 +1,6 @@
 use crate::utils::sycamore::{Callback, ViewVecExt};
 use crate::view_models::upgrade_context_view_model::{
-    Spec, UpgradeContextViewModel, spec_collection,
+    Spec, UpgradeContext, UpgradeContextViewModel, spec_collection,
 };
 use sycamore::prelude::*;
 
@@ -41,9 +41,9 @@ fn fieldset(legend: &'static str, fields: Vec<View>) -> View {
 fn probability_fields() -> Vec<View> {
     let view_model = use_context::<UpgradeContextViewModel>();
 
-    let handicraft = view_model.current_upgrade_context.get_clone().handicraft.map(|x| x.to_string());
-    let enhance_mastery = view_model.current_upgrade_context.get_clone().enhance_mastery.map(|x| x.to_string());
-    let upgrade_salvation = view_model.current_upgrade_context.get_clone().upgrade_salvation.map(|x| x.to_string());
+    let handicraft = view_model.get_field(|context| context.handicraft);
+    let enhance_mastery = view_model.get_field(|context| context.enhance_mastery);
+    let upgrade_salvation = view_model.get_field(|context| context.upgrade_salvation);
 
     let handicraft_callback = view_model.handicraft_change_callback();
     let enhance_mastery_callback = view_model.enhance_mastery_change_callback();
@@ -75,9 +75,9 @@ fn probability_fields() -> Vec<View> {
 fn equipment_fields() -> Vec<View> {
     let view_model = use_context::<UpgradeContextViewModel>();
 
-    let equipment_level = view_model.current_upgrade_context.get_clone().equipment_level.map(|x| x.to_string());
-    let upgradeable_count = view_model.current_upgrade_context.get_clone().upgradeable_count.map(|x| x.to_string());
-    let trace_required = view_model.current_upgrade_context.get_clone().trace_required.map(|x| x.to_string());
+    let equipment_level = view_model.get_field(|context| context.equipment_level);
+    let upgradeable_count = view_model.get_field(|context| context.upgradeable_count);
+    let trace_required = view_model.get_field(|context| context.trace_required);
 
     let equipment_level_callback = view_model.equipment_level_change_callback();
     let upgradeable_count_callback = view_model.upgradeable_count_change_callback();
@@ -96,7 +96,7 @@ fn equipment_fields() -> Vec<View> {
 fn price_fields() -> Vec<View> {
     let view_model = use_context::<UpgradeContextViewModel>();
 
-    let trace_price = view_model.current_upgrade_context.get_clone().trace_price.map(|x| x.to_string());
+    let trace_price = view_model.get_field(|context| context.trace_price);
 
     let trace_price_callback = view_model.trace_price_change_callback();
 

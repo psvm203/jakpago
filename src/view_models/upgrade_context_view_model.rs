@@ -21,6 +21,14 @@ impl UpgradeContextViewModel {
         }
     }
 
+    pub fn get_field<F>(&self, field_getter: F) -> Option<String>
+    where
+        F: Fn(&UpgradeContext) -> Option<u32>,
+    {
+        let upgrade_context = self.current_upgrade_context.get_clone_untracked();
+        field_getter(&upgrade_context).map(|x| x.to_string())
+    }
+
     fn create_callback<F>(&self, spec: &Spec, field_setter: F) -> Callback
     where
         F: Fn(&mut UpgradeContext, Option<u32>) + 'static,
