@@ -6,8 +6,13 @@ use crate::{
     models::upgrade_context,
     utils::sycamore::{Callback, EventParser},
 };
+use gloo_storage::{LocalStorage, Storage};
 use sycamore::prelude::*;
 use web_sys::Event;
+
+mod constants {
+    pub const UPGRADE_CONTEXT_STORAGE_KEY: &str = "upgrade_context";
+}
 
 #[derive(Clone)]
 pub struct UpgradeContextViewModel {
@@ -16,8 +21,11 @@ pub struct UpgradeContextViewModel {
 
 impl UpgradeContextViewModel {
     pub fn new() -> Self {
+        let stored_upgrade_context: UpgradeContext =
+            LocalStorage::get(constants::UPGRADE_CONTEXT_STORAGE_KEY).unwrap_or_default();
+
         Self {
-            current_upgrade_context: create_signal(UpgradeContext::default()),
+            current_upgrade_context: create_signal(stored_upgrade_context),
         }
     }
 
@@ -43,7 +51,8 @@ impl UpgradeContextViewModel {
             {
                 let mut upgrade_context = current_upgrade_context.get_clone_untracked();
                 field_setter(&mut upgrade_context, Some(value));
-                current_upgrade_context.set(upgrade_context);
+                current_upgrade_context.set(upgrade_context.clone());
+                LocalStorage::set(constants::UPGRADE_CONTEXT_STORAGE_KEY, upgrade_context).unwrap();
             }
         })
     }

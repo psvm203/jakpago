@@ -1,3 +1,5 @@
+use serde::{Deserialize, Serialize};
+
 pub mod spec_collection {
     pub struct Spec {
         pub label: &'static str,
@@ -56,7 +58,7 @@ pub mod spec_collection {
     };
 }
 
-#[derive(Clone, Default)]
+#[derive(Clone, Default, Deserialize, Serialize)]
 pub struct UpgradeContext {
     pub handicraft: Option<u32>,
     pub enhance_mastery: Option<u32>,
