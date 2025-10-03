@@ -6,12 +6,6 @@ pub mod spec_collection {
         pub max: u32,
     }
 
-    impl Spec {
-        pub const fn allows(&self, value: u32) -> bool {
-            self.min <= value && value <= self.max
-        }
-    }
-
     pub const HANDICRAFT: Spec = Spec {
         label: "손재주",
         placeholder: "0 ~ 100",
