@@ -52,8 +52,8 @@ impl UpgradeContextViewModel {
     where
         F: Fn(&UpgradeContext) -> Option<u32>,
     {
-        let context = self.current_upgrade_context.get_clone_untracked();
-        let value = field_getter(&context).unwrap_or_default();
+        let upgrade_context = self.current_upgrade_context.get_clone_untracked();
+        let value = field_getter(&upgrade_context).unwrap_or_default();
 
         tooltip_fn(value)
     }
