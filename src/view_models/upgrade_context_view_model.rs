@@ -5,7 +5,7 @@ pub use crate::models::upgrade_context::{
 use crate::{
     models::upgrade_context,
     utils::{
-        api::get_handicraft,
+        api,
         sycamore::{Callback, EventParser, EventValue},
     },
 };
@@ -45,12 +45,26 @@ impl UpgradeContextViewModel {
 
         Callback::from(move |event: Event| {
             if let Some(character_name) = event.value() {
-                let mut upgrade_context = current_upgrade_context.get_clone_untracked();
-                upgrade_context.handicraft = get_handicraft(character_name);
-                current_upgrade_context.set(upgrade_context.clone());
-                LocalStorage::set(constants::UPGRADE_CONTEXT_STORAGE_KEY, upgrade_context).unwrap();
+                wasm_bindgen_futures::spawn_local(async move {
+                    Self::fetch_probability_context(current_upgrade_context, character_name).await;
+                });
             }
         })
+    }
+
+    async fn fetch_probability_context(
+        current_upgrade_context: Signal<UpgradeContext>,
+        character_name: String,
+    ) {
+        let probability_context =
+            api::lib::fetch_probability_context(character_name).await.unwrap();
+
+        let mut upgrade_context = current_upgrade_context.get_clone_untracked();
+        upgrade_context.handicraft = Some(probability_context.handicraft);
+        upgrade_context.enhance_mastery = Some(probability_context.enhance_mastery);
+        upgrade_context.upgrade_salvation = Some(probability_context.upgrade_salvation);
+        current_upgrade_context.set(upgrade_context.clone());
+        LocalStorage::set(constants::UPGRADE_CONTEXT_STORAGE_KEY, upgrade_context).unwrap();
     }
 
     fn create_callback<F>(&self, spec: &Spec, field_setter: F) -> Callback
