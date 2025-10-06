@@ -58,11 +58,12 @@ impl UpgradeContextViewModel {
     ) {
         let probability_context =
             api::lib::fetch_probability_context(character_name).await.unwrap();
-
         let mut upgrade_context = current_upgrade_context.get_clone_untracked();
+
         upgrade_context.handicraft = Some(probability_context.handicraft);
         upgrade_context.enhance_mastery = Some(probability_context.enhance_mastery);
         upgrade_context.upgrade_salvation = Some(probability_context.upgrade_salvation);
+
         current_upgrade_context.set(upgrade_context.clone());
         LocalStorage::set(constants::UPGRADE_CONTEXT_STORAGE_KEY, upgrade_context).unwrap();
     }
