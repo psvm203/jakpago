@@ -1,5 +1,5 @@
 use crate::utils::api::requests::{
-    ApiRequest, CharacterBasic, CharacterBasicRequest, CharacterPropensityRequest,
+    ApiRequest, BadResponse, CharacterBasic, CharacterBasicRequest, CharacterPropensityRequest,
     CharacterRequest, GuildBasicInformationRequest, GuildRequest, GuildSkill,
 };
 
@@ -15,7 +15,9 @@ pub struct ProbabilityContext {
     pub upgrade_salvation: u32,
 }
 
-pub async fn fetch_probability_context(character_name: String) -> Result<ProbabilityContext, ()> {
+pub async fn fetch_probability_context(
+    character_name: String,
+) -> Result<ProbabilityContext, BadResponse> {
     let ocid = get_ocid(character_name).await?;
     let handicraft = get_handicraft(ocid.clone()).await?;
     let character_basic = get_character_basic(ocid).await?;
@@ -51,7 +53,7 @@ pub async fn fetch_probability_context(character_name: String) -> Result<Probabi
     }
 }
 
-async fn get_ocid(character_name: String) -> Result<String, ()> {
+async fn get_ocid(character_name: String) -> Result<String, BadResponse> {
     CharacterRequest {
         character_name,
     }
@@ -60,7 +62,7 @@ async fn get_ocid(character_name: String) -> Result<String, ()> {
     .map(|character| character.ocid)
 }
 
-async fn get_handicraft(ocid: String) -> Result<u32, ()> {
+async fn get_handicraft(ocid: String) -> Result<u32, BadResponse> {
     CharacterPropensityRequest {
         ocid,
     }
@@ -69,7 +71,7 @@ async fn get_handicraft(ocid: String) -> Result<u32, ()> {
     .map(|propensity| propensity.handicraft_level)
 }
 
-async fn get_character_basic(ocid: String) -> Result<CharacterBasic, ()> {
+async fn get_character_basic(ocid: String) -> Result<CharacterBasic, BadResponse> {
     CharacterBasicRequest {
         ocid,
     }
@@ -77,7 +79,7 @@ async fn get_character_basic(ocid: String) -> Result<CharacterBasic, ()> {
     .await
 }
 
-async fn get_guild_id(guild_name: String, world_name: String) -> Result<String, ()> {
+async fn get_guild_id(guild_name: String, world_name: String) -> Result<String, BadResponse> {
     GuildRequest {
         guild_name,
         world_name,
@@ -87,7 +89,7 @@ async fn get_guild_id(guild_name: String, world_name: String) -> Result<String, 
     .map(|guild| guild.oguild_id)
 }
 
-async fn get_guild_skills(oguild_id: String) -> Result<Vec<GuildSkill>, ()> {
+async fn get_guild_skills(oguild_id: String) -> Result<Vec<GuildSkill>, BadResponse> {
     GuildBasicInformationRequest {
         oguild_id,
     }

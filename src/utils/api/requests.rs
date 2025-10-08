@@ -1,5 +1,6 @@
-use gloo_net::http::Request;
+use gloo_net::http::{Request, Response};
 use serde::{Deserialize, Serialize};
+use std::{convert::Infallible, str::FromStr};
 
 mod constants {
     pub const ORIGIN: &str = "https://nexon-open-api-proxy.psvm203.workers.dev";
@@ -10,20 +11,76 @@ pub trait ApiRequest {
 
     type ApiResponse;
 
-    async fn get(&self) -> Result<Self::ApiResponse, ()>
+    async fn get(&self) -> Result<Self::ApiResponse, BadResponse>
     where
         Self: Serialize,
         for<'de> Self::ApiResponse: Deserialize<'de>,
     {
         let origin = constants::ORIGIN;
         let path = Self::PATH;
-        let params = serde_urlencoded::to_string(self).unwrap();
+        let params =
+            serde_urlencoded::to_string(self).map_err(|_| BadResponse::ParameterSerializeError)?;
         let url = format!("{origin}{path}?{params}");
 
-        let response = Request::get(&url).send().await.unwrap();
+        let response = Request::get(&url).send().await.map_err(|_| BadResponse::NetworkError)?;
 
-        Ok(response.json::<Self::ApiResponse>().await.unwrap())
+        if !response.ok() {
+            return Err(Self::parse_error_response(response).await);
+        }
+
+        response.json::<Self::ApiResponse>().await.map_err(|_| BadResponse::ParseError)
     }
+
+    async fn parse_error_response(response: Response) -> BadResponse {
+        match response.json::<Error>().await {
+            Ok(error) => BadResponse::from_str(&error.name).unwrap(),
+            Err(_) => BadResponse::UnknownResponse,
+        }
+    }
+}
+
+#[derive(Debug)]
+pub enum BadResponse {
+    InternalServerError,
+    Forbidden,
+    InvalidIdentifier,
+    InvalidParameter,
+    InvalidApiKey,
+    InvalidPath,
+    TooManyRequests,
+    DataNotReady,
+    GameUnderMaintenance,
+    ApiUnderMaintenance,
+    UnknownResponse,
+    ParameterSerializeError,
+    ParseError,
+    NetworkError,
+}
+
+impl FromStr for BadResponse {
+    type Err = Infallible;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "OPENAPI00001" => Ok(Self::InternalServerError),
+            "OPENAPI00002" => Ok(Self::Forbidden),
+            "OPENAPI00003" => Ok(Self::InvalidIdentifier),
+            "OPENAPI00004" => Ok(Self::InvalidParameter),
+            "OPENAPI00005" => Ok(Self::InvalidApiKey),
+            "OPENAPI00006" => Ok(Self::InvalidPath),
+            "OPENAPI00007" => Ok(Self::TooManyRequests),
+            "OPENAPI00009" => Ok(Self::DataNotReady),
+            "OPENAPI00010" => Ok(Self::GameUnderMaintenance),
+            "OPENAPI00011" => Ok(Self::ApiUnderMaintenance),
+            _ => Ok(Self::UnknownResponse),
+        }
+    }
+}
+
+#[derive(Deserialize)]
+struct Error {
+    name: String,
+    message: String,
 }
 
 #[derive(Deserialize)]
